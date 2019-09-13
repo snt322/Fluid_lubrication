@@ -49,7 +49,7 @@ public class Reynolds_CShader : MonoBehaviour
     [SerializeField, Tooltip("ComputeShaderを使用可否のToggleスイッチをセットしてください")]
     private UnityEngine.UI.Toggle m_Toggle = null;
 
-
+    
 
     // Use this for initialization
     void Start()
@@ -151,4 +151,5 @@ public class Reynolds_CShader : MonoBehaviour
         m_CSInput.SetData(data);
     }
 
+    
 }
