@@ -49,7 +49,15 @@ public class Reynolds_CShader : MonoBehaviour
     [SerializeField, Tooltip("ComputeShaderを使用可否のToggleスイッチをセットしてください")]
     private UnityEngine.UI.Toggle m_Toggle = null;
 
-    
+    /// <summary>
+    /// 流体潤滑(三次元レイノルズ方程式)の計算に必要なオブジェクト
+    /// </summary>
+    private ReynoldsFunc.Mesh mesh = null;
+    /// <summary>
+    /// 計算格子点数
+    /// </summary>
+    private const uint meshX = 500, meshZ = 500;
+
 
     // Use this for initialization
     void Start()
@@ -151,5 +159,10 @@ public class Reynolds_CShader : MonoBehaviour
         m_CSInput.SetData(data);
     }
 
-    
+    void InitReynoldsMesh()
+    {
+        mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);
+        mesh.CreateHeightArray(0.00003, meshZ / 2);
+        mesh.CreateDeltaXYArray();
+    }
 }

@@ -804,269 +804,366 @@ namespace ReynoldsFunc
 
         }
 
-
-
-        public class matrix
+        /// <summary>
+        /// X成分の計算格子点数meshCountXを返す
+        /// </summary>
+        public uint MeshCountX
         {
-            /// <summary>
-            /// matrixを初期値を指定せず初期化する。要素は全て0で初期化される。
-            /// </summary>
-            public matrix()
+            get
             {
-                for (int j = 0; j < 3; j++)
-                {
-                    for (int i = 0; i < 3; i++)
-                    {
-                        this.m[i, j] = (MyVar)0;
-                    }
-                }
+                return this.meshCountX;
             }
-
-            /// <summary>
-            /// matrixの初期値を指定して初期化する。
-            /// </summary>
-            /// <param name="v1">maxrixの1行目の要素に値を渡す。[0,0] = v1.X, [0,1] = v1.Y, [0,2] = v1.Z</param>
-            /// <param name="v2">maxrixの2行目の要素に値を渡す。[1,0] = v2.X, [1,1] = v2.Y, [1,2] = v2.Z</param>
-            /// <param name="v3">maxrixの3行目の要素に値を渡す。[2,0] = v3.X, [2,1] = v3.Y, [2,2] = v3.Z</param>
-            public matrix(VECTOR v1, VECTOR v2, VECTOR v3)
-            {
-                this.m[0, 0] = v1.X;
-                this.m[0, 1] = v1.Y;
-                this.m[0, 2] = v1.Z;
-
-                this.m[1, 0] = v2.X;
-                this.m[1, 1] = v2.Y;
-                this.m[1, 2] = v2.Z;
-
-                this.m[2, 0] = v3.X;
-                this.m[2, 1] = v3.Y;
-                this.m[2, 2] = v3.Z;
-            }
-            /// <summary>
-            /// 
-            /// </summary>
-            public MyVar[,] m = new MyVar[3, 3];
-
-            /// <summary>
-            /// このmatrixをX軸周りでdeg°回転する回転行列にする。
-            /// </summary>
-            /// <param name="deg">X軸周りの回転角度</param>
-            public void rotateX(MyVar deg)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    for (int i = 0; i < 3; i++)
-                    {
-                        this.m[i, j] = (MyVar)0;
-                    }
-                }
-
-                MyVar pi = (MyVar)3.1415926;
-                MyVar rad = pi / (MyVar)180 * deg;
-                MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
-                MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
-
-                this.m[0, 0] = (MyVar)1.0;
-
-                this.m[1, 1] = (MyVar)cosTheta;
-                this.m[1, 2] = (MyVar)(-sinTheta);
-
-                this.m[2, 1] = (MyVar)sinTheta;
-                this.m[2, 2] = (MyVar)cosTheta;
-            }
-            /// <summary>
-            /// このmatrixをY軸周りでdeg°回転する回転行列にする。
-            /// </summary>
-            /// <param name="deg">Y軸周りの回転角度</param>
-            public void rotateY(MyVar deg)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    for (int i = 0; i < 3; i++)
-                    {
-                        this.m[i, j] = (MyVar)0;
-                    }
-                }
-
-                MyVar pi = (MyVar)3.1415926;
-                MyVar rad = pi / (MyVar)180 * deg;
-                MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
-                MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
-
-                this.m[0, 0] = (MyVar)cosTheta;
-                this.m[0, 2] = (MyVar)sinTheta;
-
-                this.m[1, 1] = (MyVar)1.0;
-
-                this.m[2, 0] = (MyVar)(-sinTheta);
-                this.m[2, 2] = (MyVar)cosTheta;
-            }
-            /// <summary>
-            /// このmatrixをZ軸軸周りでdeg°回転する回転行列にする。
-            /// </summary>
-            /// <param name="deg">Z軸周りの回転角度</param>
-            public void rotateZ(MyVar deg)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    for (int i = 0; i < 3; i++)
-                    {
-                        this.m[i, j] = (MyVar)0;
-                    }
-                }
-
-                MyVar pi = (MyVar)3.1415926;
-                MyVar rad = pi / (MyVar)180 * deg;
-                MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
-                MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
-
-
-                this.m[0, 0] = (MyVar)cosTheta;
-                this.m[1, 1] = (MyVar)cosTheta;
-
-                this.m[0, 1] = (MyVar)(-sinTheta);
-                this.m[1, 0] = (MyVar)sinTheta;
-
-                this.m[2, 2] = (MyVar)1.0;
-            }
-            public static matrix operator *(matrix m1, matrix m2)
-            {
-                MyVar _11, _12, _13;
-                MyVar _21, _22, _23;
-                MyVar _31, _32, _33;
-
-                _11 = m1.m[0, 0];
-                _12 = m1.m[0, 1];
-                _13 = m1.m[0, 2];
-
-                _21 = m1.m[1, 0];
-                _22 = m1.m[1, 1];
-                _23 = m1.m[1, 2];
-
-                _31 = m1.m[2, 0];
-                _32 = m1.m[2, 1];
-                _33 = m1.m[2, 2];
-
-                MyVar _arg11, _arg12, _arg13;
-                MyVar _arg21, _arg22, _arg23;
-                MyVar _arg31, _arg32, _arg33;
-
-                _arg11 = m2.m[0, 0];
-                _arg12 = m2.m[0, 1];
-                _arg13 = m2.m[0, 2];
-
-                _arg21 = m2.m[1, 0];
-                _arg22 = m2.m[1, 1];
-                _arg23 = m2.m[1, 2];
-
-                _arg31 = m2.m[2, 0];
-                _arg32 = m2.m[2, 1];
-                _arg33 = m2.m[2, 2];
-
-                MyVar _rslt11, _rslt12, _rslt13;
-                MyVar _rslt21, _rslt22, _rslt23;
-                MyVar _rslt31, _rslt32, _rslt33;
-
-                _rslt11 = _11 * _arg11 + _12 * _arg21 + _13 * _arg31;
-                _rslt12 = _11 * _arg12 + _12 * _arg22 + _13 * _arg32;
-                _rslt13 = _11 * _arg13 + _12 * _arg23 + _13 * _arg33;
-
-                _rslt21 = _21 * _arg11 + _22 * _arg21 + _23 * _arg31;
-                _rslt22 = _21 * _arg12 + _22 * _arg22 + _23 * _arg32;
-                _rslt23 = _21 * _arg13 + _22 * _arg23 + _23 * _arg33;
-
-                _rslt31 = _31 * _arg11 + _32 * _arg31 + _33 * _arg31;
-                _rslt32 = _31 * _arg12 + _32 * _arg32 + _33 * _arg32;
-                _rslt33 = _31 * _arg13 + _32 * _arg33 + _33 * _arg33;
-
-                VECTOR v1 = new VECTOR(_rslt11, _rslt12, _rslt13);
-                VECTOR v2 = new VECTOR(_rslt21, _rslt22, _rslt23);
-                VECTOR v3 = new VECTOR(_rslt31, _rslt32, _rslt33);
-
-                return new matrix(v1, v2, v3);
-            }
-            //public static matrix operator=(){}代入演算子のオペレータはオーバーロードできないらしい //参考URL:https://ufcpp.net/study/csharp/oo_operator.html
-        };
-
-        public class VECTOR
+        }
+        /// <summary>
+        /// Z成分の計算格子点数meshCountZを返す
+        /// </summary>
+        public uint MeshCountZ
         {
-            /// <summary>
-            /// 要素を全て0で初期化する。
-            /// </summary>
-            public VECTOR() { x = y = z = (MyVar)0; }
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="x"></param>
-            /// <param name="y"></param>
-            /// <param name="z"></param>
-            public VECTOR(MyVar x, MyVar y, MyVar z)
+            get
             {
-                X = x;
-                Y = y;
-                Z = z;
+                return this.meshCountZ;
+            }
+        }
+
+
+        /// <summary>
+        /// 係数APのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefAP
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.AP.GetLength(0), this.AP.GetLength(1)];
+                AP.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+        /// <summary>
+        /// 係数ANのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefAN
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.AN.GetLength(0), this.AN.GetLength(1)];
+                AN.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+        /// <summary>
+        /// 係数ASのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefAS
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.AS.GetLength(0), this.AS.GetLength(1)];
+                AS.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+        /// <summary>
+        /// 係数AEのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefAE
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.AE.GetLength(0), this.AE.GetLength(1)];
+                AE.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+        /// <summary>
+        /// 係数AWのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefAW
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.AW.GetLength(0), this.AW.GetLength(1)];
+                AW.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+        /// <summary>
+        /// 係数SPのコピーを返す
+        /// </summary>
+        public MyVar[,] CoefSP
+        {
+            get
+            {
+                MyVar[,] ptr = new MyVar[this.SP.GetLength(0), this.SP.GetLength(1)];
+                SP.CopyTo(ptr, 0);
+                return ptr;
+            }
+        }
+
+
+
+    }//
+
+
+    public class matrix
+    {
+        /// <summary>
+        /// matrixを初期値を指定せず初期化する。要素は全て0で初期化される。
+        /// </summary>
+        public matrix()
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    this.m[i, j] = (MyVar)0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// matrixの初期値を指定して初期化する。
+        /// </summary>
+        /// <param name="v1">maxrixの1行目の要素に値を渡す。[0,0] = v1.X, [0,1] = v1.Y, [0,2] = v1.Z</param>
+        /// <param name="v2">maxrixの2行目の要素に値を渡す。[1,0] = v2.X, [1,1] = v2.Y, [1,2] = v2.Z</param>
+        /// <param name="v3">maxrixの3行目の要素に値を渡す。[2,0] = v3.X, [2,1] = v3.Y, [2,2] = v3.Z</param>
+        public matrix(VECTOR v1, VECTOR v2, VECTOR v3)
+        {
+            this.m[0, 0] = v1.X;
+            this.m[0, 1] = v1.Y;
+            this.m[0, 2] = v1.Z;
+
+            this.m[1, 0] = v2.X;
+            this.m[1, 1] = v2.Y;
+            this.m[1, 2] = v2.Z;
+
+            this.m[2, 0] = v3.X;
+            this.m[2, 1] = v3.Y;
+            this.m[2, 2] = v3.Z;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public MyVar[,] m = new MyVar[3, 3];
+
+        /// <summary>
+        /// このmatrixをX軸周りでdeg°回転する回転行列にする。
+        /// </summary>
+        /// <param name="deg">X軸周りの回転角度</param>
+        public void rotateX(MyVar deg)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    this.m[i, j] = (MyVar)0;
+                }
             }
 
-            private MyVar x, y, z;
+            MyVar pi = (MyVar)3.1415926;
+            MyVar rad = pi / (MyVar)180 * deg;
+            MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
+            MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
 
-            public MyVar X
+            this.m[0, 0] = (MyVar)1.0;
+
+            this.m[1, 1] = (MyVar)cosTheta;
+            this.m[1, 2] = (MyVar)(-sinTheta);
+
+            this.m[2, 1] = (MyVar)sinTheta;
+            this.m[2, 2] = (MyVar)cosTheta;
+        }
+        /// <summary>
+        /// このmatrixをY軸周りでdeg°回転する回転行列にする。
+        /// </summary>
+        /// <param name="deg">Y軸周りの回転角度</param>
+        public void rotateY(MyVar deg)
+        {
+            for (int j = 0; j < 3; j++)
             {
-                set { x = value; }
-                get { return x; }
+                for (int i = 0; i < 3; i++)
+                {
+                    this.m[i, j] = (MyVar)0;
+                }
             }
 
-            public MyVar Y
+            MyVar pi = (MyVar)3.1415926;
+            MyVar rad = pi / (MyVar)180 * deg;
+            MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
+            MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
+
+            this.m[0, 0] = (MyVar)cosTheta;
+            this.m[0, 2] = (MyVar)sinTheta;
+
+            this.m[1, 1] = (MyVar)1.0;
+
+            this.m[2, 0] = (MyVar)(-sinTheta);
+            this.m[2, 2] = (MyVar)cosTheta;
+        }
+        /// <summary>
+        /// このmatrixをZ軸軸周りでdeg°回転する回転行列にする。
+        /// </summary>
+        /// <param name="deg">Z軸周りの回転角度</param>
+        public void rotateZ(MyVar deg)
+        {
+            for (int j = 0; j < 3; j++)
             {
-                set { y = value; }
-                get { return y; }
+                for (int i = 0; i < 3; i++)
+                {
+                    this.m[i, j] = (MyVar)0;
+                }
             }
 
-            public MyVar Z
-            {
-                set { z = value; }
-                get { return z; }
-            }
+            MyVar pi = (MyVar)3.1415926;
+            MyVar rad = pi / (MyVar)180 * deg;
+            MyVar cosTheta = (MyVar)System.Math.Cos((double)rad);
+            MyVar sinTheta = (MyVar)System.Math.Sign((double)rad);
 
 
-            public void SetValue(MyVar xx, MyVar yy, MyVar zz)
-            {
-                this.x = xx;
-                this.y = yy;
-                this.z = zz;
-            }
-            /// <summary>
-            /// VECTOR vとmatrix mの積を格納したインスタンスを返す。
-            /// </summary>
-            /// <param name="v"></param>
-            /// <param name="m"></param>
-            /// <returns></returns>
-            static public VECTOR operator *(VECTOR v, matrix m)
-            {
-                MyVar _1, _2, _3;
+            this.m[0, 0] = (MyVar)cosTheta;
+            this.m[1, 1] = (MyVar)cosTheta;
 
-                _1 = v.X * m.m[0, 0] + v.Y * m.m[1, 0] + v.Z * m.m[2, 0];
-                _2 = v.X * m.m[0, 1] + v.Y * m.m[1, 1] + v.Z * m.m[2, 1];
-                _3 = v.X * m.m[0, 2] + v.Y * m.m[1, 2] + v.Z * m.m[2, 2];
+            this.m[0, 1] = (MyVar)(-sinTheta);
+            this.m[1, 0] = (MyVar)sinTheta;
 
-                return new VECTOR(_1, _2, _3);
-            }
-            /// <summary>
-            /// VECTOR v1とv2の和を格納したVECTORのインスタンスを返す。
-            /// </summary>
-            /// <param name="v1"></param>
-            /// <param name="v2"></param>
-            /// <returns></returns>
-            static public VECTOR operator +(VECTOR v1, VECTOR v2)
-            {
-                MyVar _1, _2, _3;
+            this.m[2, 2] = (MyVar)1.0;
+        }
+        public static matrix operator *(matrix m1, matrix m2)
+        {
+            MyVar _11, _12, _13;
+            MyVar _21, _22, _23;
+            MyVar _31, _32, _33;
 
-                _1 = v1.X + v2.X;
-                _2 = v1.Y + v2.Y;
-                _3 = v1.Z + v2.Z;
+            _11 = m1.m[0, 0];
+            _12 = m1.m[0, 1];
+            _13 = m1.m[0, 2];
 
-                return new VECTOR(_1, _2, _3);
-            }
-        };
+            _21 = m1.m[1, 0];
+            _22 = m1.m[1, 1];
+            _23 = m1.m[1, 2];
 
-    }
+            _31 = m1.m[2, 0];
+            _32 = m1.m[2, 1];
+            _33 = m1.m[2, 2];
+
+            MyVar _arg11, _arg12, _arg13;
+            MyVar _arg21, _arg22, _arg23;
+            MyVar _arg31, _arg32, _arg33;
+
+            _arg11 = m2.m[0, 0];
+            _arg12 = m2.m[0, 1];
+            _arg13 = m2.m[0, 2];
+
+            _arg21 = m2.m[1, 0];
+            _arg22 = m2.m[1, 1];
+            _arg23 = m2.m[1, 2];
+
+            _arg31 = m2.m[2, 0];
+            _arg32 = m2.m[2, 1];
+            _arg33 = m2.m[2, 2];
+
+            MyVar _rslt11, _rslt12, _rslt13;
+            MyVar _rslt21, _rslt22, _rslt23;
+            MyVar _rslt31, _rslt32, _rslt33;
+
+            _rslt11 = _11 * _arg11 + _12 * _arg21 + _13 * _arg31;
+            _rslt12 = _11 * _arg12 + _12 * _arg22 + _13 * _arg32;
+            _rslt13 = _11 * _arg13 + _12 * _arg23 + _13 * _arg33;
+
+            _rslt21 = _21 * _arg11 + _22 * _arg21 + _23 * _arg31;
+            _rslt22 = _21 * _arg12 + _22 * _arg22 + _23 * _arg32;
+            _rslt23 = _21 * _arg13 + _22 * _arg23 + _23 * _arg33;
+
+            _rslt31 = _31 * _arg11 + _32 * _arg31 + _33 * _arg31;
+            _rslt32 = _31 * _arg12 + _32 * _arg32 + _33 * _arg32;
+            _rslt33 = _31 * _arg13 + _32 * _arg33 + _33 * _arg33;
+
+            VECTOR v1 = new VECTOR(_rslt11, _rslt12, _rslt13);
+            VECTOR v2 = new VECTOR(_rslt21, _rslt22, _rslt23);
+            VECTOR v3 = new VECTOR(_rslt31, _rslt32, _rslt33);
+
+            return new matrix(v1, v2, v3);
+        }
+        //public static matrix operator=(){}代入演算子のオペレータはオーバーロードできないらしい //参考URL:https://ufcpp.net/study/csharp/oo_operator.html
+    };
+
+    public class VECTOR
+    {
+        /// <summary>
+        /// 要素を全て0で初期化する。
+        /// </summary>
+        public VECTOR() { x = y = z = (MyVar)0; }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public VECTOR(MyVar x, MyVar y, MyVar z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        private MyVar x, y, z;
+
+        public MyVar X
+        {
+            set { x = value; }
+            get { return x; }
+        }
+
+        public MyVar Y
+        {
+            set { y = value; }
+            get { return y; }
+        }
+
+        public MyVar Z
+        {
+            set { z = value; }
+            get { return z; }
+        }
+
+
+        public void SetValue(MyVar xx, MyVar yy, MyVar zz)
+        {
+            this.x = xx;
+            this.y = yy;
+            this.z = zz;
+        }
+        /// <summary>
+        /// VECTOR vとmatrix mの積を格納したインスタンスを返す。
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        static public VECTOR operator *(VECTOR v, matrix m)
+        {
+            MyVar _1, _2, _3;
+
+            _1 = v.X * m.m[0, 0] + v.Y * m.m[1, 0] + v.Z * m.m[2, 0];
+            _2 = v.X * m.m[0, 1] + v.Y * m.m[1, 1] + v.Z * m.m[2, 1];
+            _3 = v.X * m.m[0, 2] + v.Y * m.m[1, 2] + v.Z * m.m[2, 2];
+
+            return new VECTOR(_1, _2, _3);
+        }
+        /// <summary>
+        /// VECTOR v1とv2の和を格納したVECTORのインスタンスを返す。
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
+        static public VECTOR operator +(VECTOR v1, VECTOR v2)
+        {
+            MyVar _1, _2, _3;
+
+            _1 = v1.X + v2.X;
+            _2 = v1.Y + v2.Y;
+            _3 = v1.Z + v2.Z;
+
+            return new VECTOR(_1, _2, _3);
+        }
+    };
+
 }
