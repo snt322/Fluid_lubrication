@@ -10,7 +10,6 @@ using MyVar = System.Double;
 
 public class Reynolds_CShader : MonoBehaviour
 {
-
     [SerializeField]
     private ComputeShader m_ComputeShader = null;
 
@@ -81,7 +80,7 @@ public class Reynolds_CShader : MonoBehaviour
 
         InitReynoldsMesh();                     //ReynoldsFunc.meshオブジェクトを作成する
 
- //       this.SetValueToComputeBufferFromReynoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
+        this.SetValueToComputeBufferFromReynoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
 
 
 

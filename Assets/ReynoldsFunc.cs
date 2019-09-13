@@ -828,13 +828,17 @@ namespace ReynoldsFunc
 
         /// <summary>
         /// 係数APのコピーを返す
+        /// Array.Copyを使用する https://docs.microsoft.com/ja-jp/dotnet/api/system.array.copy?view=netframework-4.8
+        /// コピーする要素数はArray.Lengthプロパティ(すべての次元内の要素の総数。配列内に要素がない場合はゼロ)を使用する 
+        /// 参考URL https://docs.microsoft.com/ja-jp/dotnet/api/system.array.length?view=netframework-4.8
+        /// 
         /// </summary>
         public MyVar[,] CoefAP
         {
             get
             {
                 MyVar[,] ptr = new MyVar[this.AP.GetLength(0), this.AP.GetLength(1)];
-                AP.CopyTo(ptr, 0);
+                System.Array.Copy(this.AP, ptr, ptr.Length);
                 return ptr;
             }
         }
@@ -846,7 +850,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar[,] ptr = new MyVar[this.AN.GetLength(0), this.AN.GetLength(1)];
-                AN.CopyTo(ptr, 0);
+                System.Array.Copy(this.AN, ptr, ptr.Length);
                 return ptr;
             }
         }
@@ -858,7 +862,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar[,] ptr = new MyVar[this.AS.GetLength(0), this.AS.GetLength(1)];
-                AS.CopyTo(ptr, 0);
+                System.Array.Copy(this.AS, ptr, ptr.Length);
                 return ptr;
             }
         }
@@ -870,7 +874,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar[,] ptr = new MyVar[this.AE.GetLength(0), this.AE.GetLength(1)];
-                AE.CopyTo(ptr, 0);
+                System.Array.Copy(this.AE, ptr, ptr.Length);
                 return ptr;
             }
         }
@@ -882,7 +886,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar[,] ptr = new MyVar[this.AW.GetLength(0), this.AW.GetLength(1)];
-                AW.CopyTo(ptr, 0);
+                System.Array.Copy(this.AW, ptr, ptr.Length);
                 return ptr;
             }
         }
@@ -894,7 +898,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar[,] ptr = new MyVar[this.SP.GetLength(0), this.SP.GetLength(1)];
-                SP.CopyTo(ptr, 0);
+                System.Array.Copy(this.SP, ptr, ptr.Length);
                 return ptr;
             }
         }
