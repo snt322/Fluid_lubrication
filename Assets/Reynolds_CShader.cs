@@ -69,6 +69,12 @@ public class Reynolds_CShader : MonoBehaviour
     /// </summary>
     private uint meshY = 1;
 
+    /// <summary>
+    /// ComputeShaderで繰り返し計算を行う毎に、
+    /// m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSInput)と
+    /// m_ComputeSader.SetBuffer(kernelNum, "inPressure", m_CSOutput)を交互にセットする。
+    /// </summary>
+    private bool m_ExchangeBuffer = false;
 
     // Use this for initialization
     void Start()
@@ -82,25 +88,9 @@ public class Reynolds_CShader : MonoBehaviour
 
         this.SetValueToComputeBufferFromReynoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
 
+        this.SetMeshCountToCShader();           //ComputeShaderに計算格子点数をセットする
 
-
-        //-------------------------------------------------------------------------------------
-        m_ComputeShader.SetInt("xLimit", (int)meshX);
-        m_ComputeShader.SetInt("yLimit", (int)meshY);
-        m_ComputeShader.SetInt("zLimit", (int)meshZ);
-
-        m_ComputeShader.SetBuffer(kernelNum, "inPressure2D", m_CSInput);        //圧力を入力
-        m_ComputeShader.SetBuffer(kernelNum, "AP", m_AP);                       //係数を入力
-        m_ComputeShader.SetBuffer(kernelNum, "AN", m_AN);
-        m_ComputeShader.SetBuffer(kernelNum, "AS", m_AS);
-        m_ComputeShader.SetBuffer(kernelNum, "AE", m_AE);
-        m_ComputeShader.SetBuffer(kernelNum, "AW", m_AW);
-        m_ComputeShader.SetBuffer(kernelNum, "SP", m_SP);
-
-        m_ComputeShader.SetBuffer(kernelNum, "outPressure2D", m_CSOutput);      //計算結果を入力するバッファをセット
-        m_ComputeShader.SetBuffer(kernelNum, "outResudial2D", m_CSResudial);    //計算結果の残差を入力するバッファをセット
-        //------------------------------------------------------------------------------------
-
+        this.SetBufferToComputeShader();        //ComputeShaderにComputeBufferをセットする
     }
 
     // Update is called once per frame
@@ -110,8 +100,36 @@ public class Reynolds_CShader : MonoBehaviour
         {
             if (!m_IsFinish)
             {
-                Debug.Log("CShader");
+                Debug.Log("Execute ComputeShader.");
+                if(m_ExchangeBuffer)
+                {
+                    m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSOutput);      //
+                    m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSInput);        //
+                }
+                else
+                {
+                    m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSInput);        //
+                    m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSOutput);        //
+                }
+
+                m_ExchangeBuffer = !m_ExchangeBuffer;
+
                 m_ComputeShader.Dispatch(kernelNum, (int)m_GroupXCount, (int)m_GroupYCount, (int)m_GroupZCount);
+                Debug.Log("Excecuted ComputeShader.");
+
+                float[] outData = new float[meshX * meshY * meshZ];
+                m_CSOutput.GetData(outData);
+
+                float maxPressure = 0.0f;
+                foreach(float a in outData)
+                {
+                    maxPressure = (maxPressure < a) ? a : maxPressure;
+                }
+
+
+
+                Debug.Log("Max Preassure = " + maxPressure);
+
             }
         }
 
@@ -214,6 +232,37 @@ public class Reynolds_CShader : MonoBehaviour
         m_CSInput.SetData(data);
 
     }
+
+    /// <summary>
+    /// ComputeShader内のグローバル変数(計算格子点数)に値をセットする
+    /// ※注意!! 計算格子点数に誤りがある場合、RWStructuredBufferの要素外にアクセスしてしまうかも?
+    /// </summary>
+    private void SetMeshCountToCShader()
+    {
+        m_ComputeShader.SetInt("xLimit", (int)meshX);
+        m_ComputeShader.SetInt("yLimit", (int)meshY);
+        m_ComputeShader.SetInt("zLimit", (int)meshZ);
+    }
+
+    /// <summary>
+    /// ComputeShaderにComputeBufferをセットする
+    /// ※注意!! ComputeBufferがnullptrの場合の動作わ未確認。
+    /// </summary>
+    private void SetBufferToComputeShader()
+    {
+        m_ComputeShader.SetBuffer(kernelNum, "inPressure2D", m_CSInput);        //圧力を入力
+        m_ComputeShader.SetBuffer(kernelNum, "AP", m_AP);                       //係数を入力
+        m_ComputeShader.SetBuffer(kernelNum, "AN", m_AN);
+        m_ComputeShader.SetBuffer(kernelNum, "AS", m_AS);
+        m_ComputeShader.SetBuffer(kernelNum, "AE", m_AE);
+        m_ComputeShader.SetBuffer(kernelNum, "AW", m_AW);
+        m_ComputeShader.SetBuffer(kernelNum, "SP", m_SP);
+
+        m_ComputeShader.SetBuffer(kernelNum, "outPressure2D", m_CSOutput);      //計算結果を入力するバッファをセット
+        m_ComputeShader.SetBuffer(kernelNum, "outResudial2D", m_CSResudial);    //計算結果の残差を入力するバッファをセット
+    }
+
+
 
     /// <summary>
     /// ReynoldsFunc.meshオブジェクトを作成する

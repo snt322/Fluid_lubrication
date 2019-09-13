@@ -25,25 +25,30 @@ uint zLimit;
 [numthreads(8, 1, 8)]
 void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 {
-	
-	uint3 blockDim = uint3(8, 8, 1);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
+	/*
+	uint3 blockDim = uint3(8, 1, 8);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
 
 	uint x = blockID.x * blockDim.x + threadID.x;
-	uint y = blockID.y * blockDim.y + threadID.y;
+	uint z = blockID.z * blockDim.z + threadID.z;
 
 	if ((xLimit-1) <= x || x < 1) { return; }
-	if ((yLimit-1) <= y || y < 1) { return; }
+	if ((zLimit-1) <= z || z < 1) { return; }
 
-	uint numPN = x + (y + 1) * xLimit;
-	uint numPS = x + (y - 1) * xLimit;
-	uint numPE = x + 1 + y * xLimit;
-	uint numPW = x - 1 + y * xLimit;
-	uint numPP = x + y * xLimit;
+	uint numPN = x + (z + 1) * xLimit;
+	uint numPS = x + (z - 1) * xLimit;
+	uint numPE = x + 1 + z * xLimit;
+	uint numPW = x - 1 + z * xLimit;
+	uint numPP = x + z * xLimit;
 
+	
 
 	float newPressure = (AN[numPP] * inPressure[numPN] + AS[numPP] * inPressure[numPS] + AE[numPP] * inPressure[numPE] + AW[numPP] * inPressure[numPW] + SP[numPP]) / AP[numPP];
 
-	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差	
+	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差
 	outPressure[numPP] = newPressure;																		//圧力
+	*/
+
+	if (blockID.x > 2) { return; }
+	outPressure[blockID.x] = 10.0f;		//ダミーの値を出力
 	
 }
