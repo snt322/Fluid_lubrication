@@ -1,0 +1,49 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CS_Reynolds
+
+
+
+RWStructuredBuffer<float> inPressure;				//入力バッファ(圧力)
+RWStructuredBuffer<float> AP;							//入力バッファ(係数)
+RWStructuredBuffer<float> AN;							//入力バッファ(係数)
+RWStructuredBuffer<float> AS;							//入力バッファ(係数)
+RWStructuredBuffer<float> AE;							//入力バッファ(係数)
+RWStructuredBuffer<float> AW;							//入力バッファ(係数)
+RWStructuredBuffer<float> SP;							//入力バッファ(生成)
+
+
+
+
+RWStructuredBuffer<float> outPressure;				//出力バッファ
+RWStructuredBuffer<float> outResudial;				//残差出力バッファ
+
+uint xLimit;
+uint yLimit;
+uint zLimit;
+
+
+[numthreads(8, 8, 1)]
+void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
+{
+	
+	uint3 blockDim = uint3(8, 8, 1);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
+
+	uint x = blockID.x * blockDim.x + threadID.x;
+	uint y = blockID.y * blockDim.y + threadID.y;
+
+	if ((xLimit-1) <= x || x < 1) { return; }
+	if ((yLimit-1) <= y || y < 1) { return; }
+
+	uint numPN = x + (y + 1) * xLimit;
+	uint numPS = x + (y - 1) * xLimit;
+	uint numPE = x + 1 + y * xLimit;
+	uint numPW = x - 1 + y * xLimit;
+	uint numPP = x + y * xLimit;
+
+
+	float newPressure = (AN[numPP] * inPressure[numPN] + AS[numPP] * inPressure[numPS] + AE[numPP] * inPressure[numPE] + AW[numPP] * inPressure[numPW] + SP[numPP]) / AP[numPP];
+
+	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差	
+	outPressure[numPP] = newPressure;																		//圧力
+	
+}
