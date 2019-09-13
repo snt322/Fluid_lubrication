@@ -81,7 +81,7 @@ public class Reynolds_CShader : MonoBehaviour
 
         InitReynoldsMesh();                     //ReynoldsFunc.meshオブジェクトを作成する
 
- //       this.SetValueToComputeBufferFromRyenoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
+ //       this.SetValueToComputeBufferFromReynoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
 
 
 
@@ -189,7 +189,7 @@ public class Reynolds_CShader : MonoBehaviour
     /// 計算に使用する係数AP,AN,AS,AE,AW,SPに値をセットする
     /// m_CSInputは全ての要素を1で初期化する
     /// </summary>
-    private void SetValueToComputeBufferFromRyenoldsMesh()
+    private void SetValueToComputeBufferFromReynoldsMesh()
     {
         MyVar[,] arrayAP = mesh.CoefAP;
         MyVar[,] arrayAN = mesh.CoefAN;
