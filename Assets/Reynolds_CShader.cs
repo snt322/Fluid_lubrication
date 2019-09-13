@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if FLOAT
+using MyVar = System.Single;
+#else
+using MyVar = System.Double;
+#endif
+
 public class Reynolds_CShader : MonoBehaviour
 {
 
@@ -25,23 +31,19 @@ public class Reynolds_CShader : MonoBehaviour
     [SerializeField]
     private string kernelName = "CS_Reynolds";
 
-
-    private uint m_GridXCount = 100;
-    private uint m_GridYCount = 100;
-    private uint m_GridZCount = 1;
-
+    
     /// <summary>
-    /// X group数
+    /// ComputeShaderで起動するX Group数
     /// </summary>
-    private uint m_GroupXCount;
+    private uint m_GroupXCount = 1;
     /// <summary>
-    /// Y group数
+    /// ComputeShaderで起動するY Group数
     /// </summary>
-    private uint m_GroupYCount;
+    private uint m_GroupYCount = 1;
     /// <summary>
-    /// Z group数
+    /// ComputeShaderで起動するZ group数
     /// </summary>
-    private uint m_GroupZCount;
+    private uint m_GroupZCount = 1;
 
     private bool m_IsFinish = false;
 
@@ -54,58 +56,50 @@ public class Reynolds_CShader : MonoBehaviour
     /// </summary>
     private ReynoldsFunc.Mesh mesh = null;
     /// <summary>
-    /// 計算格子点数
+    /// X成分の計算格子点数、void SetMeshCount()メソッドからセットする。
+    /// 未設定の場合はmeshX = 500を初期値とする
     /// </summary>
-    private const uint meshX = 500, meshZ = 500;
+    private uint meshX = 500;
+    /// <summary>
+    /// Z成分の計算格子点数、void SetMeshCount()メソッドっからセットする。
+    /// 未設定の場合はmeshZ = 500を初期値とする
+    /// </summary>
+    private uint meshZ = 500;
+    /// <summary>
+    /// Y成分の格子点数は常に1とする
+    /// </summary>
+    private uint meshY = 1;
 
 
     // Use this for initialization
     void Start()
     {
-        kernelNum = m_ComputeShader.FindKernel(kernelName);
-
-
-
-        int bufferLen = (int)(m_GridXCount * m_GridYCount * m_GridZCount);
-        m_CSInput = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-
-        m_AP = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_AN = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_AS = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_AE = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_AW = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_SP = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-
-        m_CSOutput = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-        m_CSResudial = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
-
-        uint xn, yn, zn;
-        m_ComputeShader.GetKernelThreadGroupSizes(kernelNum, out xn, out yn, out zn);
-
-        Debug.Log("x =" + xn + " y = " + yn + " z = " + zn);
-
-        m_GroupXCount = (m_GridXCount / xn) + (uint)((m_GridXCount % xn) != 0 ? 1 : 0);
-        m_GroupYCount = (m_GridXCount / yn) + (uint)((m_GridYCount % yn) != 0 ? 1 : 0);
-        m_GroupZCount = (m_GridXCount / zn) + (uint)((m_GridZCount % zn) != 0 ? 1 : 0);
         //-------------------------------------------------------------------------------------
+        this.SetMeshCount(500, 500);            //計算格子点数をセット
+        this.CreateComputeBufferOfCoefArray();  //ComputeBufferを作成、要素は未初期化
+        this.CalcGroupNum();                    //ComputeShaderで起動するGroup数を算出
 
-        InitCoeff();
+        InitReynoldsMesh();                     //ReynoldsFunc.meshオブジェクトを作成する
+
+ //       this.SetValueToComputeBufferFromRyenoldsMesh(); //ReynoldsFunc.meshオブジェクトからComputeBufferに値をコピーする
+
+
 
         //-------------------------------------------------------------------------------------
-        m_ComputeShader.SetInt("xLimit", (int)m_GridXCount);
-        m_ComputeShader.SetInt("yLimit", (int)m_GridYCount);
-        m_ComputeShader.SetInt("zLimit", (int)m_GridZCount);
+        m_ComputeShader.SetInt("xLimit", (int)meshX);
+        m_ComputeShader.SetInt("yLimit", (int)meshY);
+        m_ComputeShader.SetInt("zLimit", (int)meshZ);
 
-        m_ComputeShader.SetBuffer(kernelNum, "inPressure2D", m_CSInput);
-        m_ComputeShader.SetBuffer(kernelNum, "AP", m_AP);
+        m_ComputeShader.SetBuffer(kernelNum, "inPressure2D", m_CSInput);        //圧力を入力
+        m_ComputeShader.SetBuffer(kernelNum, "AP", m_AP);                       //係数を入力
         m_ComputeShader.SetBuffer(kernelNum, "AN", m_AN);
         m_ComputeShader.SetBuffer(kernelNum, "AS", m_AS);
         m_ComputeShader.SetBuffer(kernelNum, "AE", m_AE);
         m_ComputeShader.SetBuffer(kernelNum, "AW", m_AW);
         m_ComputeShader.SetBuffer(kernelNum, "SP", m_SP);
 
-        m_ComputeShader.SetBuffer(kernelNum, "outPressure2D", m_CSOutput);
-        m_ComputeShader.SetBuffer(kernelNum, "outResudial2D", m_CSResudial);
+        m_ComputeShader.SetBuffer(kernelNum, "outPressure2D", m_CSOutput);      //計算結果を入力するバッファをセット
+        m_ComputeShader.SetBuffer(kernelNum, "outResudial2D", m_CSResudial);    //計算結果の残差を入力するバッファをセット
         //------------------------------------------------------------------------------------
 
     }
@@ -124,6 +118,9 @@ public class Reynolds_CShader : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// ComputeBufferの後始末
+    /// </summary>
     private void OnDestroy()
     {
         m_CSInput.Release();
@@ -138,31 +135,96 @@ public class Reynolds_CShader : MonoBehaviour
 
         m_CSResudial.Release();
     }
-
-    void InitCoeff()
+    
+    /// <summary>
+    /// 計算格子点数をセットする。
+    /// </summary>
+    /// <param name="xc">X成分の計算格子点数</param>
+    /// <param name="zc">Z成分の計算格子点数</param>
+    private void SetMeshCount(uint xc, uint zc)
     {
-        int bufferLen = (int)(m_GridXCount * m_GridYCount * m_GridZCount);
+        this.meshX = xc;
+        this.meshZ = zc;
+    }
 
+    /// <summary>
+    /// ComputeShader内で使用するComputeBufferを作成する
+    /// 要素は未初期化
+    /// </summary>
+    void CreateComputeBufferOfCoefArray()
+    {
+        kernelNum = m_ComputeShader.FindKernel(kernelName);
+
+        int bufferLen = (int)(this.meshX * this.meshZ * this.meshY);
+        m_CSInput = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+
+        m_AP = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_AN = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_AS = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_AE = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_AW = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_SP = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+
+        m_CSOutput = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+        m_CSResudial = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
+
+    }
+
+    /// <summary>
+    /// ComputeShaderで起動するGroup数を計算して、m_GroupXCount,m_GroupYCount,m_GroupZCountへ格納する
+    /// </summary>
+    void CalcGroupNum()
+    {
+        uint xn, yn, zn;
+        m_ComputeShader.GetKernelThreadGroupSizes(kernelNum, out xn, out yn, out zn);
+
+        Debug.Log("x =" + xn + " y = " + yn + " z = " + zn);
+
+        m_GroupXCount = (meshX / xn) + (uint)((meshX % xn) != 0 ? 1 : 0);
+        m_GroupYCount = (meshY / yn) + (uint)((meshY % yn) != 0 ? 1 : 0);
+        m_GroupZCount = (meshZ / zn) + (uint)((meshZ % zn) != 0 ? 1 : 0);
+    }
+
+    /// <summary>
+    /// 計算に使用する係数AP,AN,AS,AE,AW,SPに値をセットする
+    /// m_CSInputは全ての要素を1で初期化する
+    /// </summary>
+    private void SetValueToComputeBufferFromRyenoldsMesh()
+    {
+        MyVar[,] arrayAP = mesh.CoefAP;
+        MyVar[,] arrayAN = mesh.CoefAN;
+        MyVar[,] arrayAS = mesh.CoefAS;
+        MyVar[,] arrayAE = mesh.CoefAE;
+        MyVar[,] arrayAW = mesh.CoefAW;
+        MyVar[,] arraySP = mesh.CoefSP;
+
+        m_AP.SetData(arrayAP);
+        m_AN.SetData(arrayAN);
+        m_AS.SetData(arrayAS);
+        m_AE.SetData(arrayAE);
+        m_AW.SetData(arrayAW);
+        m_SP.SetData(arraySP);
+
+        int bufferLen = (int)(meshX * meshY * meshZ);
         float[] data = new float[bufferLen];
-        for(int i=0; i<bufferLen; i++)
+        for (int i = 0; i < bufferLen; i++)
         {
             data[i] = 1.0f;
         }
 
-        m_AP.SetData(data);
-        m_AN.SetData(data);
-        m_AS.SetData(data);
-        m_AE.SetData(data);
-        m_AW.SetData(data);
-        m_SP.SetData(data);
-
         m_CSInput.SetData(data);
+
     }
 
+    /// <summary>
+    /// ReynoldsFunc.meshオブジェクトを作成する
+    /// </summary>
     void InitReynoldsMesh()
     {
-        mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);
+        mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);     //計算を行う格子を作成する
         mesh.CreateHeightArray(0.00003, meshZ / 2);
         mesh.CreateDeltaXYArray();
+
+        mesh.Initialize_Calcu_PerFrame_Optimized();
     }
 }

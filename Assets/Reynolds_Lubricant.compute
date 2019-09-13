@@ -22,7 +22,7 @@ uint yLimit;
 uint zLimit;
 
 
-[numthreads(8, 8, 1)]
+[numthreads(8, 1, 8)]
 void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 {
 	
