@@ -1,6 +1,12 @@
-﻿using System.Collections;
+﻿
+#define FLOAT
+
+//#define CONSOLE_ThreadGroupSize
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 #if FLOAT
 using MyVar = System.Single;
@@ -13,7 +19,14 @@ public class Reynolds_CShader : MonoBehaviour
     [SerializeField]
     private ComputeShader m_ComputeShader = null;
 
+    /// <summary>
+    /// ComputeShaderへ渡すバッファ、m_CSOutputと交互に入力と出力に切り替える
+    /// </summary>
     private ComputeBuffer m_CSInput = null;
+    /// <summary>
+    /// ComputeShaderへ渡すバッファ、m_CSInputと交互に入力と出力に切り替える
+    /// </summary>
+    private ComputeBuffer m_CSOutput = null;
 
     private ComputeBuffer m_AP = null;
     private ComputeBuffer m_AN = null;
@@ -22,7 +35,6 @@ public class Reynolds_CShader : MonoBehaviour
     private ComputeBuffer m_AW = null;
     private ComputeBuffer m_SP = null;
 
-    private ComputeBuffer m_CSOutput = null;
     private ComputeBuffer m_CSResudial = null;
 
     private int kernelNum = 0;
@@ -30,7 +42,7 @@ public class Reynolds_CShader : MonoBehaviour
     [SerializeField]
     private string kernelName = "CS_Reynolds";
 
-    
+
     /// <summary>
     /// ComputeShaderで起動するX Group数
     /// </summary>
@@ -44,7 +56,16 @@ public class Reynolds_CShader : MonoBehaviour
     /// </summary>
     private uint m_GroupZCount = 1;
 
+    /// <summary>
+    /// 計算結果が収束したらtrueをセットする
+    /// trueのセット部分は未実装
+    /// </summary>
     private bool m_IsFinish = false;
+
+    /// <summary>
+    /// ComputeShaderの計算結果を格納したComputeBuffer m_CSInputまたはm_CSOutputに格納されるので
+    /// </summary>
+    private float[] m_CalcResult = null;
 
 
     [SerializeField, Tooltip("ComputeShaderを使用可否のToggleスイッチをセットしてください")]
@@ -79,6 +100,7 @@ public class Reynolds_CShader : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+ //       TestFunc();
         //-------------------------------------------------------------------------------------
         this.SetMeshCount(500, 500);            //計算格子点数をセット
         this.CreateComputeBufferOfCoefArray();  //ComputeBufferを作成、要素は未初期化
@@ -93,6 +115,50 @@ public class Reynolds_CShader : MonoBehaviour
         this.SetBufferToComputeShader();        //ComputeShaderにComputeBufferをセットする
     }
 
+    void TestFunc()
+    {
+        int col = 100;
+        int row = 20;
+
+        float[,] origine = new float[col, row];
+        for(int i=0; i<col; i++)
+        {
+            for(int j=0; j<row; j++)
+            {
+                origine[i, j] = (float)(i + col * j);
+            }
+        }
+
+        //データを受け渡す
+        float[,] dist = new float[col, row];
+        System.Array.Copy(origine, dist, dist.Length);
+
+        Debug.Log("dist.Length = " + dist.Length);
+
+        int tmpRow = 4;
+        for(int i=0; i<col; i++)
+        {
+            Debug.Log("i = " + i + " , dist = " + dist[i,tmpRow] + " : origne = " + origine[i,tmpRow]);
+        }
+
+        float[] singleDist = new float[col * row];
+        for (int i = 0; i < col; i++)
+        {
+            for (int j = 0; j < row; j++)
+            {
+                int num = i + col * j;
+                singleDist[num] = origine[i, j];
+            }
+        }
+
+        for (int i = 0; i < col; i++)
+        {
+            int num = tmpRow * col + i;
+            Debug.Log("i = " + i + " , dist = " + dist[i, tmpRow] + " : singleDist = " + singleDist[num]);
+        }
+
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -101,7 +167,7 @@ public class Reynolds_CShader : MonoBehaviour
             if (!m_IsFinish)
             {
                 Debug.Log("Execute ComputeShader.");
-                if(m_ExchangeBuffer)
+                if (m_ExchangeBuffer)
                 {
                     m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSOutput);      //
                     m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSInput);        //
@@ -117,18 +183,29 @@ public class Reynolds_CShader : MonoBehaviour
                 m_ComputeShader.Dispatch(kernelNum, (int)m_GroupXCount, (int)m_GroupYCount, (int)m_GroupZCount);
                 Debug.Log("Excecuted ComputeShader.");
 
-                float[] outData = new float[meshX * meshY * meshZ];
-                m_CSOutput.GetData(outData);
 
-                float maxPressure = 0.0f;
-                foreach(float a in outData)
+                //計算結果を取得して、最大値、最小値を取得する
+                m_CSOutput.GetData(m_CalcResult);
+
+                float max = float.MinValue;
+                float min = float.MaxValue;
+
+                for (int j = 1; j < (meshZ - 1); j++)
                 {
-                    maxPressure = (maxPressure < a) ? a : maxPressure;
+                    for (int i = 1; i < (meshX - 1); i++)
+                    {
+                        int num = i + (int)meshX * j;
+                        float a = m_CalcResult[num];
+                        max = (max < a) ? a : max;
+                        min = (min > a) ? a : min;
+                    }
                 }
 
+                //ComputeShaderで1グループ内で起動するスレッド数を表示する
+//                Debug.Log("x = " + m_GroupXCount + "  , y = " + m_GroupYCount + " , z = " + m_GroupZCount);
 
 
-                Debug.Log("Max Preassure = " + maxPressure);
+                Debug.Log("Pressure : max = " + max + " : min = " + min);
 
             }
         }
@@ -152,7 +229,7 @@ public class Reynolds_CShader : MonoBehaviour
 
         m_CSResudial.Release();
     }
-    
+
     /// <summary>
     /// 計算格子点数をセットする。
     /// </summary>
@@ -185,6 +262,8 @@ public class Reynolds_CShader : MonoBehaviour
         m_CSOutput = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
         m_CSResudial = new ComputeBuffer(bufferLen, sizeof(float), ComputeBufferType.Default);
 
+        m_CalcResult = new float[bufferLen];
+
     }
 
     /// <summary>
@@ -195,8 +274,9 @@ public class Reynolds_CShader : MonoBehaviour
         uint xn, yn, zn;
         m_ComputeShader.GetKernelThreadGroupSizes(kernelNum, out xn, out yn, out zn);
 
+#if CONSOLE_ThreadGroupSize
         Debug.Log("x =" + xn + " y = " + yn + " z = " + zn);
-
+#endif
         m_GroupXCount = (meshX / xn) + (uint)((meshX % xn) != 0 ? 1 : 0);
         m_GroupYCount = (meshY / yn) + (uint)((meshY % yn) != 0 ? 1 : 0);
         m_GroupZCount = (meshZ / zn) + (uint)((meshZ % zn) != 0 ? 1 : 0);
@@ -215,12 +295,44 @@ public class Reynolds_CShader : MonoBehaviour
         MyVar[,] arrayAW = mesh.CoefAW;
         MyVar[,] arraySP = mesh.CoefSP;
 
-        m_AP.SetData(arrayAP);
-        m_AN.SetData(arrayAN);
-        m_AS.SetData(arrayAS);
-        m_AE.SetData(arrayAE);
-        m_AW.SetData(arrayAW);
-        m_SP.SetData(arraySP);
+        MyVar[] arryAP = new MyVar[arrayAP.GetLength(0) * arrayAP.GetLength(1)];
+        MyVar[] arryAN = new MyVar[arrayAN.GetLength(0) * arrayAN.GetLength(1)];
+        MyVar[] arryAS = new MyVar[arrayAS.GetLength(0) * arrayAS.GetLength(1)];
+        MyVar[] arryAE = new MyVar[arrayAE.GetLength(0) * arrayAE.GetLength(1)];
+        MyVar[] arryAW = new MyVar[arrayAW.GetLength(0) * arrayAW.GetLength(1)];
+        MyVar[] arrySP = new MyVar[arraySP.GetLength(0) * arraySP.GetLength(1)];
+
+        Debug.Log("-------------");
+        float max = float.MinValue;
+        float min = float.MaxValue;
+        for (int j = 1; j < meshZ; j++)
+        {
+            for (int i = 1; i < meshX; i++)
+            {
+                int num = i + j * (int)meshX;
+//                int num = i + j * arrayAP.GetLength(0);
+                arryAP[num] = arrayAP[i, j];
+                arryAN[num] = arrayAN[i, j];
+                arryAS[num] = arrayAS[i, j];
+                arryAE[num] = arrayAE[i, j];
+                arryAW[num] = arrayAW[i, j];
+                arrySP[num] = arraySP[i, j];
+
+                float a = arryAP[num];
+                max = (max < a) ? a : max;
+                min = (min > a) ? a : min;
+            }
+        }
+        Debug.Log("meshX = " + (int)meshX + " : arrayAP.GetLength(0) = " + arrayAP.GetLength(0));
+        Debug.Log("reynoldsMesh_MAX = " + max + " : reynoldsMesh_MIN = " + min);
+        Debug.Log("############");
+
+        m_AP.SetData(arryAP);
+        m_AN.SetData(arryAN);
+        m_AS.SetData(arryAS);
+        m_AE.SetData(arryAE);
+        m_AW.SetData(arryAW);
+        m_SP.SetData(arrySP);
 
         int bufferLen = (int)(meshX * meshY * meshZ);
         float[] data = new float[bufferLen];
@@ -246,11 +358,11 @@ public class Reynolds_CShader : MonoBehaviour
 
     /// <summary>
     /// ComputeShaderにComputeBufferをセットする
-    /// ※注意!! ComputeBufferがnullptrの場合の動作わ未確認。
+    /// ※注意!! ComputeBufferがnullptrの場合の動作は未確認。
     /// </summary>
     private void SetBufferToComputeShader()
     {
-        m_ComputeShader.SetBuffer(kernelNum, "inPressure2D", m_CSInput);        //圧力を入力
+        m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSInput);        //圧力を入力
         m_ComputeShader.SetBuffer(kernelNum, "AP", m_AP);                       //係数を入力
         m_ComputeShader.SetBuffer(kernelNum, "AN", m_AN);
         m_ComputeShader.SetBuffer(kernelNum, "AS", m_AS);
@@ -258,8 +370,8 @@ public class Reynolds_CShader : MonoBehaviour
         m_ComputeShader.SetBuffer(kernelNum, "AW", m_AW);
         m_ComputeShader.SetBuffer(kernelNum, "SP", m_SP);
 
-        m_ComputeShader.SetBuffer(kernelNum, "outPressure2D", m_CSOutput);      //計算結果を入力するバッファをセット
-        m_ComputeShader.SetBuffer(kernelNum, "outResudial2D", m_CSResudial);    //計算結果の残差を入力するバッファをセット
+        m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSOutput);      //計算結果を入力するバッファをセット
+        m_ComputeShader.SetBuffer(kernelNum, "outResudial", m_CSResudial);    //計算結果の残差を入力するバッファをセット
     }
 
 
@@ -270,7 +382,7 @@ public class Reynolds_CShader : MonoBehaviour
     void InitReynoldsMesh()
     {
         mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);     //計算を行う格子を作成する
-        mesh.CreateHeightArray(0.00003, meshZ / 2);
+        mesh.CreateHeightArray(0.00003f, meshZ / 2);
         mesh.CreateDeltaXYArray();
 
         mesh.Initialize_Calcu_PerFrame_Optimized();

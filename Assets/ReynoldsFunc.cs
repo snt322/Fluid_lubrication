@@ -1,6 +1,7 @@
-﻿//#define FLOAT                               //計算の精度、単精度はアンコメント、倍精度はコメントアウト
+﻿#define FLOAT                               //計算の精度、単精度はアンコメント、倍精度はコメントアウト
 
-
+//#define CONSOLE_DELTAX
+//#define CONSOLE_DELTAZ
 
 using System.Collections;
 using System.Collections.Generic;
@@ -609,10 +610,17 @@ namespace ReynoldsFunc
 
             MyVar newPressure;
             MyVar PN, PS, PE, PW;
+
+            float max = float.MinValue;
+            float min = float.MaxValue;
+
             for (int j = 1; j < (meshCountZ - 1); j++)
             {
                 for (int i = 1; i < (meshCountX - 1); i++)
                 {
+                    max = (max < AP[i, j]) ? AP[i, j] : max;
+                    min = (min > AP[i, j]) ? AP[i, j] : min;
+
                     PN = formerPressureArray[i, j + 1];
                     PS = formerPressureArray[i, j - 1];
                     PE = formerPressureArray[i + 1, j];
@@ -629,6 +637,10 @@ namespace ReynoldsFunc
                     maxPressure = maxPressure >= newPressure ? maxPressure : newPressure;                           //最高圧力を更新
                 }
             }
+
+            Debug.Log("????????????");
+            Debug.Log("fMax = " + max + " : fMin = " + min);
+            Debug.Log("!!!!!!!!!!!!");
 
             string str = System.String.Format("loop = {2} : previousResudial = {0:E5} : maxPressure = {1:E5}", currentResudial, maxPressure, loopCount);
             Debug.Log(str);
@@ -790,14 +802,17 @@ namespace ReynoldsFunc
             for (int i = 1; i < meshCountX; i++)
             {
                 deltaX[i] = (widthArray[i] - widthArray[i - 1]);
+#if CONSOLE_DELTAX
                 Debug.Log("deltaX : " + deltaX[i]);
+#endif
             }
 
             for (int j = 1; j < meshCountZ; j++)
             {
                 deltaZ[j] = (depthArray[j] - depthArray[j - 1]);
-
+#if CONSOLE_DELTAZ
                 Debug.Log("deltaZ : " + deltaZ[j]);
+#endif
             }
 
             isCreateDeltaXYArray = true;

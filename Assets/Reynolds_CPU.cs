@@ -29,7 +29,7 @@ public class Reynolds_CPU : MonoBehaviour
     void Start()
     {
         mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);
-        mesh.CreateHeightArray(0.00003, meshZ / 2);
+        mesh.CreateHeightArray(0.00003f, meshZ / 2);
         mesh.CreateDeltaXYArray();
 
 #if USE_OPTIMIZED
@@ -47,6 +47,7 @@ public class Reynolds_CPU : MonoBehaviour
 
 #if USE_OPTIMIZED
             mesh.Calcu_PerFrame_Optimized();
+
 #else
         mesh.Calcu_PerFrame();
 #endif

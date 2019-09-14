@@ -25,7 +25,7 @@ uint zLimit;
 [numthreads(8, 1, 8)]
 void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 {
-	/*
+	
 	uint3 blockDim = uint3(8, 1, 8);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
 
 	uint x = blockID.x * blockDim.x + threadID.x;
@@ -44,11 +44,6 @@ void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 
 	float newPressure = (AN[numPP] * inPressure[numPN] + AS[numPP] * inPressure[numPS] + AE[numPP] * inPressure[numPE] + AW[numPP] * inPressure[numPW] + SP[numPP]) / AP[numPP];
 
-	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差
+//	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差
 	outPressure[numPP] = newPressure;																		//圧力
-	*/
-
-	if (blockID.x > 2) { return; }
-	outPressure[blockID.x] = 10.0f;		//ダミーの値を出力
-	
 }
