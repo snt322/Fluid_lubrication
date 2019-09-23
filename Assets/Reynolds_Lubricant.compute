@@ -1,9 +1,24 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CS_Reynolds
+#pragma kernel CS_Reynolds_StructuredInput
+
+
+/*
+	三次元レイノルズ方程式の表示がY軸変数(膜厚方向成分)を
+*/
+#define xThreadNum 8
+#define yThreadNum 1
+#define zThreadNum 8
 
 
 
+
+/*
+	UAV数(ID3D11UnorderedAccessView)に制限がある
+*/
 RWStructuredBuffer<float> inPressure;				//入力バッファ(圧力)
+
+
 RWStructuredBuffer<float> AP;							//入力バッファ(係数)
 RWStructuredBuffer<float> AN;							//入力バッファ(係数)
 RWStructuredBuffer<float> AS;							//入力バッファ(係数)
@@ -11,6 +26,17 @@ RWStructuredBuffer<float> AE;							//入力バッファ(係数)
 RWStructuredBuffer<float> AW;							//入力バッファ(係数)
 RWStructuredBuffer<float> SP;							//入力バッファ(生成)
 
+struct inputCoef
+{
+	float AP;
+	float AN;
+	float AS;
+	float AE;
+	float AW;
+	float SP;
+};
+
+RWStructuredBuffer<inputCoef> inputs;
 
 
 
@@ -22,11 +48,12 @@ uint yLimit;
 uint zLimit;
 
 
-[numthreads(8, 1, 8)]
+[numthreads(xThreadNum, yThreadNum, zThreadNum)]
 void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 {
 	
-	uint3 blockDim = uint3(8, 1, 8);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
+	uint3 blockDim = uint3(xThreadNum, yThreadNum, zThreadNum);					//Group内のThread数		//CUDAのキーワードblockDimに相当するものが見つけられないので代わりに定義
+																				//参考URL http://sygh.hatenadiary.jp/category/GPU?page=1423573373
 
 	uint x = blockID.x * blockDim.x + threadID.x;
 	uint z = blockID.z * blockDim.z + threadID.z;
@@ -46,4 +73,28 @@ void CS_Reynolds(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
 
 //	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);								//残差
 	outPressure[numPP] = newPressure;																		//圧力
+}
+
+
+[numthreads(xThreadNum, yThreadNum, zThreadNum)]
+void CS_Reynolds_StructuredInput(uint3 blockID : SV_GroupID, uint3 threadID : SV_GroupThreadID)
+{
+	uint x = xThreadNum * blockID.x + threadID.x;
+	uint z = zThreadNum * blockID.z + threadID.z;
+
+	if ((xLimit - 1) <= x || x < 1) { return; }
+	if ((zLimit - 1) <= z || z < 1) { return; }
+
+	uint numPN = x + (z + 1) * xLimit;
+	uint numPS = x + (z - 1) * xLimit;
+	uint numPE = x + 1 + z * xLimit;
+	uint numPW = x - 1 + z * xLimit;
+	uint numPP = x + z * xLimit;
+
+
+	float newPressure = (inputs[numPP].AN * inPressure[numPN] + inputs[numPP].AS * inPressure[numPS] + inputs[numPP].AE * inPressure[numPE] + inputs[numPP].AW * inPressure[numPW] + inputs[numPP].SP) / inputs[numPP].AP;
+
+	outResudial[numPP] = abs((newPressure - inPressure[numPP]) / newPressure);
+
+	outPressure[numPP] = newPressure;
 }
