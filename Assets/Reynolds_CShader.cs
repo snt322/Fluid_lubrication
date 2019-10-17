@@ -108,6 +108,24 @@ public class Reynolds_CShader : MonoBehaviour
     /// </summary>
     private uint meshY = 1;
 
+    public uint MeshXCount
+    {
+        private set { }
+        get { return this.meshX; }
+    }
+    public uint MeshZCount
+    {
+        private set { }
+        get { return this.meshZ; }
+    }
+
+    [SerializeField, Tooltip("X方向の格子点数"), Range(1, 256)]
+    private uint MeshX;
+
+    [SerializeField, Tooltip("Z方向の格子点数"), Range(1, 256)]
+    private uint MeshZ;
+
+
     /// <summary>
     /// ComputeShaderで繰り返し計算を行う毎に、
     /// m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSInput)と
@@ -116,10 +134,10 @@ public class Reynolds_CShader : MonoBehaviour
     private bool m_ExchangeBuffer = false;
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         //-------------------------------------------------------------------------------------
-        this.SetMeshCount(500, 500);            //計算格子点数をセット
+        this.SetMeshCount(MeshX, MeshZ);            //計算格子点数をセット
         InitReynoldsMesh();                     //ReynoldsFunc.meshオブジェクトを作成する
 #if USE_STRUCTURED_CBUFFER
         this.CreateComputeBufferOfCoefStruct();
@@ -461,6 +479,56 @@ public class Reynolds_CShader : MonoBehaviour
 
         mesh.Initialize_Calcu_PerFrame_Optimized();
     }
+
+    /// <summary>
+    /// 格子点上の高さ配列のコピーを返す。1次要素X、2次要素Z
+    /// </summary>
+    public float[,] HeightArray
+    {
+        get { return this.mesh.HeightArray; }
+    }
+
+    /// <summary>
+    /// 格子点のX座標配列のコピーを返す
+    /// </summary>
+    public float[] XPosArray
+    {
+        get { return this.mesh.XposArray; }
+    }
+
+    /// <summary>
+    /// 格子点のZ座標配列のコピーを返す
+    /// </summary>
+    public float[] ZPosArray
+    {
+        get { return this.mesh.ZposArray; }
+    }
+
+
+    /// <summary>
+    /// 計算領域のX方向長さを返す
+    /// </summary>
+    public MyVar CalAreaX
+    {
+        get { return mesh.CalAreaX; }
+    }
+
+    /// <summary>
+    /// 計算領域のZ方向長さを返す
+    /// </summary>
+    public MyVar CalAreaZ
+    {
+        get { return mesh.CalAreaZ; }
+    }
+
+    /// <summary>
+    /// 計算領域のY方向(高さ)の最大値を返す
+    /// </summary>
+    public MyVar CalAreaY
+    {
+        get { return mesh.MaxHeight; }
+    }
+
 }
 
 namespace MyComputeBufferStruct

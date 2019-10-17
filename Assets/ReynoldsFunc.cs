@@ -19,7 +19,7 @@ namespace ReynoldsFunc
 
     public class ConstValue
     {
-        public const MyVar RIBANGLE_DEG = (MyVar)45.0;
+        public const MyVar RIBANGLE_DEG = (MyVar)80.0;
         public const MyVar LIP_SHAFT_GAP = (MyVar)0.00001;
         public const MyVar LIPANGLE_DEG = (MyVar)20.0;
 
@@ -99,7 +99,7 @@ namespace ReynoldsFunc
         private MyVar[,] formerPressureArray = null;
 
         /// <summary>
-        /// 高さの二次元配列
+        /// 高さの二次元配列、1次要素X、2次要素Z
         /// </summary>
         private MyVar[,] heightArray = null;
 
@@ -109,7 +109,7 @@ namespace ReynoldsFunc
         private MyVar[] widthArray = null;
 
         /// <summary>
-        /// 格子点のY座標
+        /// 格子点のZ座標
         /// </summary>
         private MyVar[] depthArray = null;
 
@@ -716,10 +716,10 @@ namespace ReynoldsFunc
         /// <summary>
         /// 計算格子の高さをセットする
         /// </summary>
-        /// <param name="h"></param>
-        /// <param name="sinewaveoffsetZ"></param>
-        /// <param name="swaveAngleFromAxeZ"></param>
-        /// <param name="gap"></param>
+        /// <param name="h">リブの高さ</param>
+        /// <param name="sinewaveoffsetZ">リブの位置を指定する。Z座標の格子番号を渡してください</param>
+        /// <param name="swaveAngleFromAxeZ">リブの摺動面からのなす角</param>
+        /// <param name="gap">リップと軸表面の最小隙間</param>
         public void CreateHeightArray(MyVar h, uint sinewaveoffsetZ, MyVar swaveAngleFromAxeZ = ConstValue.RIBANGLE_DEG, MyVar gap = ConstValue.LIP_SHAFT_GAP)
         {
             if (h <= 0.0f) { h = (MyVar)1.0; }
@@ -918,7 +918,65 @@ namespace ReynoldsFunc
             }
         }
 
+        /// <summary>
+        /// 計算格子点上の高さ配列のコピーを返す
+        /// </summary>
+        public MyVar[,] HeightArray
+        {
+            get
+            {
+                return (MyVar[,])heightArray.Clone();
+            }
+        }
 
+        /// <summary>
+        /// 格子点のX座標配列のコピーを返す
+        /// </summary>
+        public MyVar[] XposArray
+        {
+            get { return (MyVar[])widthArray.Clone(); }
+        }
+
+        /// <summary>
+        /// 格子点のZ座標配列のコピーを返す
+        /// </summary>
+        public MyVar[] ZposArray
+        {
+            get { return (MyVar[])depthArray.Clone(); }
+        }
+
+        /// <summary>
+        /// 計算領域のX方向長さを返す
+        /// </summary>
+        public MyVar CalAreaX
+        {
+            get { return this.magX; }
+        }
+
+        /// <summary>
+        /// 計算領域のZ方向長さを返す
+        /// </summary>
+        public MyVar CalAreaZ
+        {
+            get { return this.magZ; }
+        }
+
+        /// <summary>
+        /// 計算領域のY方向長さ(高さ)の最大値を返す
+        /// </summary>
+        public MyVar MaxHeight
+        {
+            get
+            {
+                MyVar value = MyVar.MinValue;
+                foreach(MyVar v in heightArray)
+                {
+                    value = value < v ? v : value;
+                }
+
+                return value;
+            }
+        }
 
     }//
 
