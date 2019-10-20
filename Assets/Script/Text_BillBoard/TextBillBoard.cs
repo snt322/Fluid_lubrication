@@ -9,17 +9,10 @@ public class TextBillBoard : MonoBehaviour , IBillBoardSendMessage
     [SerializeField]
     private UnityEngine.Camera m_Camera = null;
 
-    // Use this for initialization
-    void Start()
-    {
-
-    }
 
     // Update is called once per frame
     void Update()
     {
-//        this.gameObject.transform.up = m_Camera.transform.up;
-
         Vector3 lookToPos = this.gameObject.transform.position - m_Camera.transform.position;
 
         this.gameObject.transform.LookAt(lookToPos, this.m_Camera.transform.up);

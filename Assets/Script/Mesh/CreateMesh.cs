@@ -217,6 +217,7 @@ namespace MyMesh
             }
             catch(System.Exception e)
             {
+                Debug.Log(e.Message);
                 isSucceed = false;
             }
 

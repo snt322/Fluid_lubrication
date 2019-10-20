@@ -30,6 +30,11 @@ public class ResultMeshController : MonoBehaviour
     [SerializeField, Tooltip("Z軸")]
     private UnityEngine.LineRenderer m_Zaxis = null;
 
+    [Header("等高線の軸ラベル")]
+    [SerializeField, Tooltip("")]
+    private CreateLabels m_AxiLabel = null;
+    [Space(1)]
+
     private MyMesh.Mesh m_Mesh;
 
     [Header("レイノルズ方程式 (コンピュート・シェーダ)")]
@@ -38,32 +43,33 @@ public class ResultMeshController : MonoBehaviour
     [Space(1)]
 
     [Header("3Dグラフ表示の設定")]
-    [SerializeField, Tooltip("X座標の表示幅"), Range(1,10)]
-    private float m_Xwidth;
+    [SerializeField, Tooltip("X座標の表示幅"), Range(1, 10)]
+    private float m_Xwidth = 1.0f;
 
     [SerializeField, Tooltip("Z座標の表示幅"), Range(1, 10)]
-    private float m_Zwidth;
+    private float m_Zwidth = 1.0f;
 
     [SerializeField, Tooltip("Y座標の表示幅"), Range(1, 10)]
-    private float m_Ywidth;
+    private float m_Ywidth = 1.0f;
 
     // Use this for initialization
     void Start()
     {
 
- //       SetPlaneMesh();
+        //       SetPlaneMesh();
 
 
         SetPlaneMeshFromCShader();
         float Xwidth = m_RCShader.CalAreaX;
         float Zwidth = m_RCShader.CalAreaZ;
         float Ywidth = m_RCShader.CalAreaY;
-        float magnitudeX = 10.0f / Xwidth;
-        float magnitudeZ = 10.0f / Zwidth;
-        float magnitudeY = 10.0f / Ywidth;
+        float magnitudeX = m_Xwidth / Xwidth;
+        float magnitudeZ = m_Zwidth / Zwidth;
+        float magnitudeY = m_Ywidth / Ywidth;
 
         this.m_MeshFilter.transform.localScale = new Vector3(magnitudeX, magnitudeY, magnitudeZ);
 
+        MyOnValidate();
 
         Debug.Log("SetPlaneMesh()");
     }
@@ -72,6 +78,11 @@ public class ResultMeshController : MonoBehaviour
     /// インスペクタ上で値が変更された場合
     /// </summary>
     private void OnValidate()
+    {
+        MyOnValidate();
+    }
+
+    private void MyOnValidate()
     {
         try
         {
@@ -104,13 +115,12 @@ public class ResultMeshController : MonoBehaviour
             m_Zaxis.SetPosition(0, new Vector3(0, 0, 0));
             m_Zaxis.SetPosition(1, zPos);
 
-
+            UnityEngine.EventSystems.ExecuteEvents.Execute<IMessageCreateLabel>(m_AxiLabel.gameObject, null, (sender, eventData) => { sender.UpdateLabelPos(new Vector3(xPos.x, yPos.y, zPos.z)); });
         }
         catch (System.Exception e)
         {
             Debug.Log(e.Message);
         }
-
     }
 
 
@@ -127,8 +137,10 @@ public class ResultMeshController : MonoBehaviour
         int meshZCount = (int)m_RCShader.MeshZCount;
 
 
-        Mesh mesh = new Mesh();
-        m_MeshFilter.mesh = mesh;
+        Mesh meshRederer = new Mesh();
+        m_MeshFilter.mesh = meshRederer;
+
+        meshRederer.name = "MyPlaneMesh";
 
         int x = (int)m_RCShader.MeshXCount;
         int z = (int)m_RCShader.MeshZCount;
@@ -149,15 +161,16 @@ public class ResultMeshController : MonoBehaviour
             {
                 num = i + j * x;
                 colors[num] = new Color(0.0f, 0.0f, 1.0f);
-                vertices[num] = new Vector3(xPos[i], height[i,j], zPos[j]);
+                vertices[num] = new Vector3(xPos[i], height[i, j], zPos[j]);
             }
         }
 
-        mesh.vertices = vertices;
+        meshRederer.vertices = vertices;
         //        mesh.colors = colors;
 
-        int numIndices = 0;
 
+
+        int numIndices = 0;
         int[] indices = new int[6 * (x - 1) * (z - 1)];
         for (int i = 0; i < (x - 1); i++)
         {
@@ -177,7 +190,8 @@ public class ResultMeshController : MonoBehaviour
         Debug.Log("x = " + x + " z = " + z + " total = " + (x * z));
         Debug.Log("numIndices = " + numIndices);
 
-        mesh.triangles = indices;
+        meshRederer.SetIndices(indices, MeshTopology.LineStrip, 0);
+
 
         Vector2[] uv = new Vector2[x * z];
 
@@ -190,15 +204,33 @@ public class ResultMeshController : MonoBehaviour
             }
         }
 
-        //        Debug.Log();
+        meshRederer.uv = uv;
 
-        mesh.uv = uv;
+        Debug.Log("GetIndexCount = " + meshRederer.GetIndexCount(0));
 
-        Debug.Log("GetIndexCount = " + mesh.GetIndexCount(0));
 
-        m_MeshFilter.mesh = mesh;
+        //---------------------------------------------------------------
+        Mesh meshCollider = new Mesh();
 
-        m_MCollider.sharedMesh = mesh;
+        List<Vector3> inVertices = new List<Vector3>(4);
+        inVertices.Add(new Vector3(0, 0, 0));
+        inVertices.Add(new Vector3(xPos[x - 1], height[x - 1, 0], zPos[0]));
+        inVertices.Add(new Vector3(xPos[x - 1], height[x - 1, z - 1], zPos[z - 1]));
+        inVertices.Add(new Vector3(xPos[0], height[0, z - 1], zPos[z - 1]));
+
+        meshCollider.SetVertices(inVertices);
+
+        int[] inIndices = new int[6];
+        inIndices[0] = 0;
+        inIndices[1] = 2;
+        inIndices[2] = 1;
+        inIndices[3] = 2;
+        inIndices[4] = 3;
+        inIndices[5] = 1;
+
+        meshCollider.SetIndices(inIndices, MeshTopology.Triangles, 0);
+
+        m_MCollider.sharedMesh = meshCollider;
     }
 
 
@@ -239,7 +271,7 @@ public class ResultMeshController : MonoBehaviour
         }
 
         mesh.vertices = vertices;
-        //        mesh.colors = colors;
+        mesh.colors = colors;
 
         int numIndices = 0;
 
@@ -266,16 +298,16 @@ public class ResultMeshController : MonoBehaviour
 
         Vector2[] uv = new Vector2[m_Mesh.XmeshCount * m_Mesh.ZmeshCount];
 
-        for(int i=0; i<x; i++)
+        for (int i = 0; i < x; i++)
         {
-            for(int j=0; j<z; j++)
+            for (int j = 0; j < z; j++)
             {
                 num = i + j * x;
                 uv[num] = new Vector2(1.0f / (float)(x - 1) * (float)i, 1.0f / (float)(z - 1) * (float)j);
             }
         }
 
-//        Debug.Log();
+        //        Debug.Log();
 
         mesh.uv = uv;
 
