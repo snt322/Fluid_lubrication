@@ -19,7 +19,7 @@ namespace ReynoldsFunc
 
     public class ConstValue
     {
-        public const MyVar RIBANGLE_DEG = (MyVar)80.0;
+        public const MyVar RIBANGLE_DEG = (MyVar)30.0;
         public const MyVar LIP_SHAFT_GAP = (MyVar)0.00001;
         public const MyVar LIPANGLE_DEG = (MyVar)20.0;
 
@@ -969,7 +969,7 @@ namespace ReynoldsFunc
             get
             {
                 MyVar value = MyVar.MinValue;
-                foreach(MyVar v in heightArray)
+                foreach (MyVar v in heightArray)
                 {
                     value = value < v ? v : value;
                 }
