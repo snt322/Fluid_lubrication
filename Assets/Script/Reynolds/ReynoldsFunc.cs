@@ -19,7 +19,7 @@ namespace ReynoldsFunc
 
     public class ConstValue
     {
-        public const MyVar RIBANGLE_DEG = (MyVar)30.0;
+        public const MyVar RIBANGLE_DEG = (MyVar)60.0;
         public const MyVar LIP_SHAFT_GAP = (MyVar)0.00001;
         public const MyVar LIPANGLE_DEG = (MyVar)20.0;
 
@@ -683,8 +683,10 @@ namespace ReynoldsFunc
 
             lipAngle = ConstValue.RIBANGLE_DEG;
 
-            meshCountX = x + 1;
-            meshCountZ = z + 1;
+//            meshCountX = x + 1;
+//            meshCountZ = z + 1;
+            meshCountX = x;
+            meshCountZ = z;
 
             magX = (MyVar)System.Math.Abs(magx);
             magZ = (MyVar)System.Math.Abs(magz);

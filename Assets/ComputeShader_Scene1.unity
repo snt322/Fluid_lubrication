@@ -978,8 +978,8 @@ MonoBehaviour:
   m_ComputeShader: {fileID: 7200000, guid: c879f3ecb3ffc4c45a09e66b8b5e9166, type: 3}
   kernelName: CS_Reynolds
   m_Toggle: {fileID: 682011067}
-  MeshX: 61
-  MeshZ: 73
+  MeshX: 100
+  MeshZ: 100
 --- !u!1 &676809055
 GameObject:
   m_ObjectHideFlags: 0

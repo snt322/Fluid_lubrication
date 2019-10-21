@@ -171,10 +171,30 @@ public class ResultMeshController : MonoBehaviour
 
 
         int numIndices = 0;
-        int[] indices = new int[6 * (x - 1) * (z - 1)];
-        for (int i = 0; i < (x - 1); i++)
+        int[] indices = new int[2 * (x - 1) * z + 2 * x * (z - 1)];
+        for(int i=0; i<x; i++)
         {
-            for (int j = 0; j < (z - 1); j++)
+            for(int j=0; j<(z - 1); j++)
+            {
+                indices[numIndices++] = i + j * x;
+                indices[numIndices++] = i + (j + 1) * x;
+            }
+        }
+
+        for(int j=0; j<z; j++)
+        {
+            for(int i=0; i<(x-1); i++)
+            {
+                indices[numIndices++] = i + j * x;
+                indices[numIndices++] = i + 1 + j * x;
+            }
+        }
+
+/*
+        int[] indices = new int[6 * (x - 1) * (z - 1)];
+        for (int i = 0; i <= (x - 2); i++)
+        {
+            for (int j = 0; j <= (z - 2); j++)
             {
                 indices[numIndices++] = (i) + (j) * x;
                 indices[numIndices++] = (i + 1) + (j + 1) * x;
@@ -186,11 +206,17 @@ public class ResultMeshController : MonoBehaviour
 
             }
         }
+*/
+
+
 
         Debug.Log("x = " + x + " z = " + z + " total = " + (x * z));
         Debug.Log("numIndices = " + numIndices);
 
-        meshRederer.SetIndices(indices, MeshTopology.LineStrip, 0);
+        meshRederer.SetIndices(indices, MeshTopology.Lines, 0);
+//        meshRederer.SetIndices(indices, MeshTopology.LineStrip, 0);
+
+
 
 
         Vector2[] uv = new Vector2[x * z];

@@ -324,9 +324,9 @@ public class Reynolds_CShader : MonoBehaviour
         Debug.Log("-------------2");
         float max = float.MinValue;
         float min = float.MaxValue;
-        for (int j = 1; j < meshZ; j++)
-        {
-            for (int i = 1; i < meshX; i++)
+        for (int j = 1; j < (meshZ - 1); j++)
+        { 
+            for (int i = 1; i < (meshX - 1); i++)
             {
                 int num = i + j * (int)meshX;
                 //int num = i + j * arrayAP.GetLength(0);
@@ -409,9 +409,9 @@ public class Reynolds_CShader : MonoBehaviour
         Debug.Log("-------------");
         float max = float.MinValue;
         float min = float.MaxValue;
-        for (int j = 1; j < meshZ; j++)
+        for (int j = 1; j < (meshZ - 1); j++)
         {
-            for (int i = 1; i < meshX; i++)
+            for (int i = 1; i < (meshX - 1); i++)
             {
                 int num = i + j * (int)meshX;
 //                int num = i + j * arrayAP.GetLength(0);
