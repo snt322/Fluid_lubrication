@@ -13,13 +13,13 @@ public class ResultMeshController : MonoBehaviour
 
     [Header("等高線図の表示設定")]
     [SerializeField, Tooltip("等高線図の原点ビルボードにアタッチしたTextBillBoardをセットしてください")]
-    private TextBillBoard m_OrigineBillBoard = null;
+    private GameObject m_OrigineBillBoard = null;
     [SerializeField, Tooltip("等高線図のX軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
-    private TextBillBoard m_XaxisBillBoard = null;
+    private GameObject m_XaxisBillBoard = null;
     [SerializeField, Tooltip("等高線図のZ軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
-    private TextBillBoard m_ZaxisBillBoard = null;
+    private GameObject m_ZaxisBillBoard = null;
     [SerializeField, Tooltip("等高線図のY軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
-    private TextBillBoard m_YaxisBillBoard = null;
+    private GameObject m_YaxisBillBoard = null;
     [Space(1)]
 
     [Header("等高線図の軸")]
@@ -101,10 +101,10 @@ public class ResultMeshController : MonoBehaviour
             Vector3 yPos = new Vector3(0, m_Ywidth, 0);
 
 
-            UnityEngine.EventSystems.ExecuteEvents.Execute<IBillBoardSendMessage>(m_OrigineBillBoard.gameObject, null, (sender, eventData) => { sender.SetWorldPosition(originePos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<IBillBoardSendMessage>(m_ZaxisBillBoard.gameObject, null, (sender, eventData) => { sender.SetWorldPosition(zPos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<IBillBoardSendMessage>(m_XaxisBillBoard.gameObject, null, (sender, eventData) => { sender.SetWorldPosition(xPos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<IBillBoardSendMessage>(m_YaxisBillBoard.gameObject, null, (sender, eventData) => { sender.SetWorldPosition(yPos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_OrigineBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(originePos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_ZaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(zPos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_XaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(xPos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_YaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(yPos); });
 
             m_Xaxis.SetPosition(0, new Vector3(0, 0, 0));
             m_Xaxis.SetPosition(1, xPos);
@@ -116,6 +116,14 @@ public class ResultMeshController : MonoBehaviour
             m_Zaxis.SetPosition(1, zPos);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessageCreateLabel>(m_AxiLabel.gameObject, null, (sender, eventData) => { sender.UpdateLabelPos(new Vector3(xPos.x, yPos.y, zPos.z)); });
+
+
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
+
+
+
         }
         catch (System.Exception e)
         {

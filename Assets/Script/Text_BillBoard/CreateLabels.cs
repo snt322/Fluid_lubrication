@@ -89,15 +89,6 @@ public class CreateLabels : MonoBehaviour, IMessageCreateLabel
             m_Labels.Add(gObj);
         }
 
-
-        //        gObj.AddComponent<UnityEngine.UI.Text>();
-        //        gObj.GetComponent<UnityEngine.UI.Text>().text = "Textです。";
-
-        //        Font font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-        //        gObj.GetComponent<UnityEngine.UI.Text>().font = font;
-
-        //        gObj.transform.SetParent(GameObject.FindGameObjectWithTag("MainCanvas").transform);
-
     }
 
     // Update is called once per frame
@@ -108,9 +99,15 @@ public class CreateLabels : MonoBehaviour, IMessageCreateLabel
 
     private void OnDestroy()
     {
-        foreach(GameObject g in m_Labels)
+        if (m_Labels != null)
         {
-            Destroy(g);
+            foreach (GameObject g in m_Labels)
+            {
+                if (g != null)
+                {
+                    Destroy(g);
+                }
+            }
         }
     }
 

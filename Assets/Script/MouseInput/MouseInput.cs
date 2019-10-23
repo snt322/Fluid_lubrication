@@ -114,5 +114,7 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageDistance(delta.y); });
 
         Debug.Log("Scroll. : " + delta);
+
+
     }
 }
