@@ -117,10 +117,10 @@ public class ResultMeshController : MonoBehaviour
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessageCreateLabel>(m_AxiLabel.gameObject, null, (sender, eventData) => { sender.UpdateLabelPos(new Vector3(xPos.x, yPos.y, zPos.z)); });
 
-
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, new Vector3(xPos.x, yPos.y, zPos.z)); });
+            var MyAxisGridVect = new Vector3(m_Xwidth, m_Ywidth, m_Zwidth);
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
 
 
 

@@ -10,6 +10,10 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class AxisAuxiliaryScaleController : MonoBehaviour, MyAxisGrid.ISendMessage
 {
+    [SerializeField]
+    Shader m_Shader = null;
+
+
     /// <summary>
     /// AxisX,Y,Zの長さ、要素x,y,zがそれぞれ対応
     /// </summary>
@@ -146,6 +150,12 @@ public class AxisAuxiliaryScaleController : MonoBehaviour, MyAxisGrid.ISendMessa
         {
             var lRender = m_AxisLabels[i].GetComponent<LineRenderer>() as LineRenderer;
 
+            //マテリアルの作成
+            //https://docs.unity3d.com/ja/2017.4/ScriptReference/Material.html
+            var tmpMaterial = new Material(m_Shader);
+            tmpMaterial.color = Color.white;
+            m_AxisLabels[i].GetComponent<Renderer>().material = tmpMaterial;
+
             float pos = 0;
             float x, y, z;
             x = y = z = 0;
@@ -187,7 +197,7 @@ public class AxisAuxiliaryScaleController : MonoBehaviour, MyAxisGrid.ISendMessa
                     {
                         Vector3[] lRenderPos = new Vector3[2];
                         lRenderPos[0] = new Vector3(0, 0, z);
-                        lRenderPos[1] = new Vector3(m_AxisMax.z, 0, z);
+                        lRenderPos[1] = new Vector3(m_AxisMax.x, 0, z);
                         lRender.positionCount = 2;
                         lRender.SetPositions(lRenderPos);
                     }
