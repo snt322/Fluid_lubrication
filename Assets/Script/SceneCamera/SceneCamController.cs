@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 public class SceneCamController : MonoBehaviour, IMessage
 {
     private Transform m_ThisCamTForm;
-    private Quaternion m_TmpQuaternion;
+    private Quaternion m_CurrentQuaternion;
 
     private float m_Distance = 10.0f;
     private readonly float m_DistMinLimit = 0.5f;
@@ -15,10 +15,6 @@ public class SceneCamController : MonoBehaviour, IMessage
     private Vector3 m_CameraFocusPos = new Vector3(0,0,0);
     private Vector3 m_CameraCurrentPos;
 
-    /// <summary>
-    /// 現在未使用
-    /// </summary>
-    private Vector3 m_CameraPos;
 
     void IMessage.MessageDistance(float distance)
     {
@@ -93,23 +89,62 @@ public class SceneCamController : MonoBehaviour, IMessage
 
     void IMessage.MessageRotateConfirm()
     {
-        m_TmpQuaternion = m_ThisCamTForm.rotation;
+        m_CurrentQuaternion = m_ThisCamTForm.rotation;
     }
 
     // Use this for initialization
     void Start()
     {
+        InitializeAtStart();
+    }
+
+    private void InitializeAtStart()
+    {
         m_ThisCamTForm = this.gameObject.GetComponent<Transform>() as Transform;
+        m_ThisCamTForm.position = m_CameraFocusPos - m_ThisCamTForm.forward * m_Distance;
+        m_CurrentQuaternion = m_ThisCamTForm.rotation;
+        m_CameraCurrentPos = this.gameObject.transform.position;
+
+        CameraInitializeParam.ConstValue.InitialCamFocus = m_CameraFocusPos;
+        CameraInitializeParam.ConstValue.InitialDistance = m_Distance;
+        CameraInitializeParam.ConstValue.InitialCamForward = m_ThisCamTForm.forward;                    //初期値を保存
+        CameraInitializeParam.ConstValue.InitalCamRot = m_CurrentQuaternion;
+        CameraInitializeParam.ConstValue.InitialCamPos = m_CameraCurrentPos;
+
+    }
+
+    private void ReInitalize()
+    {
+        m_ThisCamTForm.forward = CameraInitializeParam.ConstValue.InitialCamForward;
+        m_ThisCamTForm.up = CameraInitializeParam.ConstValue.InitialCamUp;
+        m_CameraFocusPos = CameraInitializeParam.ConstValue.InitialCamFocus;
+        m_Distance = CameraInitializeParam.ConstValue.InitialDistance;
+        m_CurrentQuaternion = CameraInitializeParam.ConstValue.InitalCamRot;
+
+
+        m_ThisCamTForm.rotation = m_CurrentQuaternion;
 
         m_ThisCamTForm.position = m_CameraFocusPos - m_ThisCamTForm.forward * m_Distance;
 
-
-        m_TmpQuaternion = m_ThisCamTForm.rotation;
-
-        m_CameraPos = this.gameObject.transform.position;
-        m_CameraCurrentPos = this.gameObject.transform.position;
     }
 
+    void IMessage.MessageResetPos()
+    {
+        ReInitalize();
+    }
+}
+
+namespace CameraInitializeParam
+{
+    public class ConstValue
+    {
+        public static Vector3 InitialCamFocus = new Vector3(0, 0, 0);
+        public static Vector3 InitialCamPos = new Vector3(0, 0, 0);
+        public static Vector3 InitialCamForward = new Vector3(0,0,0);
+        public static Vector3 InitialCamUp = new Vector3(0, 0, 0);
+        public static Quaternion InitalCamRot = new Quaternion();
+        public static float InitialDistance = 0;
+    }
 }
 
 public interface IMessage : IEventSystemHandler
@@ -118,4 +153,5 @@ public interface IMessage : IEventSystemHandler
     void MessageDistance(float distance);
     void MessageRotateConfirm();
     void MessageMove(Vector3 move);
+    void MessageResetPos();
 }

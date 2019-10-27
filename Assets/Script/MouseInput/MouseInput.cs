@@ -25,6 +25,10 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     GameObject m_SceneCamera = null;
 
 
+    [SerializeField, Tooltip("左マウスクリックで表示するパネル(MenuContext)をセットしてください。")]
+    GameObject m_GameObjectMenuContext = null;
+
+
     private MouseFunction m_MouseFunc = new MouseFunction();
 
     private Vector2 m_FormerMousePos;
@@ -76,13 +80,22 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageRotateConfirm(); });
             Debug.Log("OnPointerUp" + eventData.position);
 
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
 
         if (eventData.button == PointerEventData.InputButton.Middle)
         {
             m_IsMiddleDown = false;
             Debug.Log("Middle Up.");
+
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
+
+        if(eventData.button == PointerEventData.InputButton.Right)
+        {
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Show(eventData); });            Debug.Log("Right Up.");
+        }
+
     }
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
