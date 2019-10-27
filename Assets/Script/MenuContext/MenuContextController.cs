@@ -12,8 +12,14 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class MenuContextController : MonoBehaviour, MenuContext.ISendMessage, IPointerUpHandler, IPointerDownHandler
 {
+    [Header("カメラ操作")]
     [SerializeField, Tooltip("操作するカメラをGameObjectをセットしてください。")]
     GameObject m_SceneCamera = null;
+    [Space(1)]
+
+    [Header("圧力表示/メッシュ表示の選択")]
+    [SerializeField, Tooltip("PressureMeshControllerをセットしたGameObjectをセットしてください。")]
+    private GameObject m_MeshControllerObj = null;
 
     Transform m_ThisTrans = null;
 
@@ -87,6 +93,11 @@ public class MenuContextController : MonoBehaviour, MenuContext.ISendMessage, IP
     public void Button_ShowPressure()
     {
         Debug.Log("Button_ShowPressure().");
+
+        UnityEngine.EventSystems.ExecuteEvents.Execute<PressureMesh.ISendMessage>(m_MeshControllerObj, null, (sender,eventData)=> { sender.CreateAndSetPressureMesh(); });
+
+
+
 
         Hide();         //MenuContexを隠す。
     }

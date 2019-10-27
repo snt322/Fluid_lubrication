@@ -1394,6 +1394,7 @@ GameObject:
   m_Component:
   - component: {fileID: 969282475}
   - component: {fileID: 969282474}
+  - component: {fileID: 969282476}
   m_Layer: 0
   m_Name: MyMesh
   m_TagString: Untagged
@@ -1442,6 +1443,19 @@ Transform:
   m_Father: {fileID: 1738954966}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &969282476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 969282473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f19ec0faa14fef4a9fbcee81803de80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RCShader: {fileID: 633000760}
+  m_TargetMeshObj: {fileID: 1071783693}
 --- !u!1 &994331109
 GameObject:
   m_ObjectHideFlags: 0
@@ -2772,7 +2786,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ecf21df0aa69f44abbb47ea4a9f1595, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SceneCamera: {fileID: 0}
+  m_SceneCamera: {fileID: 1502998643}
+  m_MeshControllerObj: {fileID: 969282473}
 --- !u!114 &1653700233
 MonoBehaviour:
   m_ObjectHideFlags: 0

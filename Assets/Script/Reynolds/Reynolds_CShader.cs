@@ -488,6 +488,14 @@ public class Reynolds_CShader : MonoBehaviour
         get { return this.mesh.HeightArray; }
     }
 
+    public float[] Pressure
+    {
+        get
+        {
+            return this.m_CalcResult;
+        }
+    }
+
     /// <summary>
     /// 格子点のX座標配列のコピーを返す
     /// </summary>
