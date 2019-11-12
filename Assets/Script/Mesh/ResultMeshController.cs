@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ResultMesh;
 using UnityEngine;
 
 using UnityEngine.EventSystems;
 
-public class ResultMeshController : MonoBehaviour
+
+public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
 {
     [SerializeField]
     private UnityEngine.MeshFilter m_MeshFilter = null;
@@ -49,16 +51,22 @@ public class ResultMeshController : MonoBehaviour
     [SerializeField, Tooltip("Z座標の表示幅"), Range(1, 10)]
     private float m_Zwidth = 1.0f;
 
-    [SerializeField, Tooltip("Y座標の表示幅"), Range(1, 10)]
+    [SerializeField, Tooltip("Y座標の表示幅"), Range(0.001f, 10)]
     private float m_Ywidth = 1.0f;
+
+    [Header("メッシュの更新頻度(回/frame)")]
+    [SerializeField, Tooltip("メッシュの更新レート(回/frame)"), Range(1, 1000)]
+    private int m_MeshUpdatePerFrame = 1;
+
+
+
+
+    private ResultMesh.enumMeshType m_MeshType = ResultMesh.enumMeshType.CalcuMesh;
+
 
     // Use this for initialization
     void Start()
     {
-
-        //       SetPlaneMesh();
-
-
         SetPlaneMeshFromCShader();
         float Xwidth = m_RCShader.CalAreaX;
         float Zwidth = m_RCShader.CalAreaZ;
@@ -83,6 +91,23 @@ public class ResultMeshController : MonoBehaviour
     }
 
     private void MyOnValidate()
+    {
+        switch (m_MeshType)
+        {
+            case ResultMesh.enumMeshType.CalcuMesh:
+                MyOnValidate_Calc();
+                break;
+            case ResultMesh.enumMeshType.PressureMesh:
+                MyOnValidate_Pressure();
+                break;
+        }
+
+    }
+
+    /// <summary>
+    /// 計算格子を表示するメソッド
+    /// </summary>
+    private void MyOnValidate_Calc()
     {
         try
         {
@@ -121,9 +146,6 @@ public class ResultMeshController : MonoBehaviour
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
-
-
-
         }
         catch (System.Exception e)
         {
@@ -131,6 +153,60 @@ public class ResultMeshController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 計算結果を表示するメソッド
+    /// </summary>
+    private void MyOnValidate_Pressure()
+    {
+        try
+        {
+            float Xwidth = m_RCShader.CalAreaX;
+            float Zwidth = m_RCShader.CalAreaZ;
+            float Ywidth = m_RCShader.MaxPressure;
+
+            Debug.Log("Pressure = " + Ywidth + "+++++++++++++++++++++++" );
+
+            float magnitudeX = m_Xwidth / Xwidth;
+            float magnitudeZ = m_Zwidth / Zwidth;
+            float magnitudeY = m_Ywidth / Ywidth;
+
+            Debug.Log("m_Ywidth = " + m_Ywidth + "+++++++++++++++++++++++");
+            Debug.Log("magnitudeY = " + magnitudeY + "+++++++++++++++++++++++");
+
+            this.m_MeshFilter.transform.localScale = new Vector3(magnitudeX, magnitudeY, magnitudeZ);
+
+            Vector3 originePos = new Vector3(0, 0, 0);
+            Vector3 xPos = new Vector3(m_Xwidth, 0, 0);
+            Vector3 zPos = new Vector3(0, 0, m_Zwidth);
+            Vector3 yPos = new Vector3(0, m_Ywidth, 0);
+
+
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_OrigineBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(originePos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_ZaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(zPos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_XaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(xPos); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_YaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(yPos); });
+
+            m_Xaxis.SetPosition(0, new Vector3(0, 0, 0));
+            m_Xaxis.SetPosition(1, xPos);
+
+            m_Yaxis.SetPosition(0, new Vector3(0, 0, 0));
+            m_Yaxis.SetPosition(1, yPos);
+
+            m_Zaxis.SetPosition(0, new Vector3(0, 0, 0));
+            m_Zaxis.SetPosition(1, zPos);
+
+            UnityEngine.EventSystems.ExecuteEvents.Execute<IMessageCreateLabel>(m_AxiLabel.gameObject, null, (sender, eventData) => { sender.UpdateLabelPos(new Vector3(xPos.x, yPos.y, zPos.z)); });
+
+            var MyAxisGridVect = new Vector3(m_Xwidth, m_Ywidth, m_Zwidth);
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log(e.Message);
+        }
+    }
 
 
     /// <summary>
@@ -352,5 +428,38 @@ public class ResultMeshController : MonoBehaviour
         m_MCollider.sharedMesh = mesh;
     }
 
+    /// <summary>
+    /// 計算格子のメッシュを表示するメッセージを受信する
+    /// </summary>
+    void ISendMessage.ShowCalcMesh()
+    {
+        this.m_MeshType = enumMeshType.CalcuMesh;
+        MyOnValidate();
+    }
 
+    /// <summary>
+    /// 計算結果の圧力をメッシュとして表示するメッセ―ジを受信する
+    /// </summary>
+    void ISendMessage.ShowPressureMesh()
+    {
+        m_MeshType = enumMeshType.PressureMesh;
+        MyOnValidate();
+    }
 }
+
+namespace ResultMesh
+{
+    public enum enumMeshType
+    {
+        CalcuMesh,
+        PressureMesh,
+    }
+
+    public interface ISendMessage : IEventSystemHandler
+    {
+        void ShowCalcMesh();
+        void ShowPressureMesh();
+    }
+}
+
+

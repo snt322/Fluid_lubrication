@@ -20,6 +20,9 @@ public class MenuContextController : MonoBehaviour, MenuContext.ISendMessage, IP
     [Header("圧力表示/メッシュ表示の選択")]
     [SerializeField, Tooltip("PressureMeshControllerをセットしたGameObjectをセットしてください。")]
     private GameObject m_MeshControllerObj = null;
+    [SerializeField, Tooltip("ResultMeshControllerをセットしたGameObjectをセットしてください。")]
+    private GameObject m_ResultMeshControllerObj = null;
+
 
     Transform m_ThisTrans = null;
 
@@ -45,6 +48,7 @@ public class MenuContextController : MonoBehaviour, MenuContext.ISendMessage, IP
         var posRelateToParent = pos - screenCenterPos;
 
         m_ThisTrans.localPosition = posRelateToParent;
+//        Debug.Log("ISendMessage.Show(Vector3).");
     }
 
     /// <summary>
@@ -76,27 +80,28 @@ public class MenuContextController : MonoBehaviour, MenuContext.ISendMessage, IP
     }
     private void Hide()
     {
-        var movX = Screen.width;
-        m_ThisTrans.localPosition += new Vector3(movX, 0, 0);
-        Debug.Log("Received.");
+        var movX = Screen.width / 2;
+        var movY = Screen.height;
+        m_ThisTrans.localPosition = new Vector3(movX, 0, 0);
+//        Debug.Log("ISendMessage.Hide().");
     }
 
 
     public void Button_ResetGraphPos()
     {
         UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, eventData) => { sender.MessageResetPos(); });
-        Debug.Log("Button_ResetGraphPos().");
+//        Debug.Log("Button_ResetGraphPos().");
 
         Hide();         //MenuContexを隠す。
     }
 
     public void Button_ShowPressure()
     {
-        Debug.Log("Button_ShowPressure().");
+//        Debug.Log("Button_ShowPressure().");
 
         UnityEngine.EventSystems.ExecuteEvents.Execute<PressureMesh.ISendMessage>(m_MeshControllerObj, null, (sender,eventData)=> { sender.CreateAndSetPressureMesh(); });
 
-
+        UnityEngine.EventSystems.ExecuteEvents.Execute<ResultMesh.ISendMessage>(m_ResultMeshControllerObj, null, (sender, eventData) => { sender.ShowPressureMesh(); });
 
 
         Hide();         //MenuContexを隠す。

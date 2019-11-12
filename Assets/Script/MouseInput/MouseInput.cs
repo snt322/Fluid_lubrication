@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using MyMouseInputInterface;
 using UnityEngine;
 
 using UnityEngine.EventSystems;
@@ -19,16 +20,18 @@ using UnityEngine.EventSystems;
 
 
 
-public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IScrollHandler
+public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IScrollHandler, MyMouseInputInterface.ISendMessage
 {
     [SerializeField]
     GameObject m_SceneCamera = null;
 
 
     [SerializeField, Tooltip("左マウスクリックで表示するパネル(MenuContext)をセットしてください。")]
-    GameObject m_GameObjectMenuContext = null;
+    private GameObject m_GameObjectMenuContext = null;
 
-
+    /// <summary>
+    /// マウス左ボタンの動作を制御するオブジェクト
+    /// </summary>
     private MouseFunction m_MouseFunc = new MouseFunction();
 
     private Vector2 m_FormerMousePos;
@@ -55,7 +58,7 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, eventData) => { sender.MessageRotate(rot); });
-            Debug.Log("Mouse Delta = " + tmpVect);
+ //           Debug.Log("Mouse Delta = " + tmpVect);
         }
 
         if(m_IsMiddleDown)
@@ -78,7 +81,7 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         {
             m_MouseFunc.MouseUp(eventData.position);
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageRotateConfirm(); });
-            Debug.Log("OnPointerUp" + eventData.position);
+ //           Debug.Log("OnPointerUp" + eventData.position);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
@@ -86,14 +89,15 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         if (eventData.button == PointerEventData.InputButton.Middle)
         {
             m_IsMiddleDown = false;
-            Debug.Log("Middle Up.");
+//            Debug.Log("Middle Up.");
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
 
         if(eventData.button == PointerEventData.InputButton.Right)
         {
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Show(eventData); });            Debug.Log("Right Up.");
+            UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Show(eventData); });
+//            Debug.Log("Right Up.");
         }
 
     }
@@ -104,7 +108,7 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         {
             m_MouseFunc.MouseDown(eventData.position);
             m_MouseFunc.CurrentMousePos = eventData.position;
-            Debug.Log("OnPointerDown" + eventData.position);
+//            Debug.Log("OnPointerDown" + eventData.position);
 
             m_FormerMousePos = eventData.position;
         }
@@ -114,7 +118,7 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             m_IsMiddleDown = true;
             m_FormerMouseMiddlePos = eventData.position;
 
-            Debug.Log("Middle Down.");
+//            Debug.Log("Middle Down.");
         }
 
     }
@@ -126,8 +130,23 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
         UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageDistance(delta.y); });
 
-        Debug.Log("Scroll. : " + delta);
+ //       Debug.Log("Scroll. : " + delta);
 
 
+    }
+
+    void ISendMessage.SendMouseDelta(float delta)
+    {
+        Debug.Log("ISendMessage : " + delta);
+        UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageDistance(delta); });
+    }
+}
+
+
+namespace MyMouseInputInterface
+{
+    public interface ISendMessage : IEventSystemHandler
+    {
+        void SendMouseDelta(float delta);
     }
 }

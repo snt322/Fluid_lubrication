@@ -29,8 +29,6 @@ using MyVar = System.Double;
 
 public class Reynolds_CShader : MonoBehaviour
 {
-    [SerializeField]
-    private ComputeShader m_ComputeShader = null;
 
     /// <summary>
     /// ComputeShaderへ渡すバッファ、m_CSOutputと交互に入力と出力に切り替える
@@ -56,9 +54,61 @@ public class Reynolds_CShader : MonoBehaviour
     private ComputeBuffer m_Coef = null;
 
 
+    [Header("ComputeShaderセッティング")]
+    [Space(1)]
+    [SerializeField, Tooltip("使用するComputeShaderをセットしてください。")]
+    private ComputeShader m_ComputeShader = null;
 
-    [SerializeField]
+    [SerializeField, Tooltip("ComputeShader内のカーネル名をセットしてください。")]
     private string kernelName = "CS_Reynolds";
+
+    [SerializeField, Tooltip("ComputeShaderを使用可否のToggleスイッチをセットしてください。")]
+    private UnityEngine.UI.Toggle m_Toggle = null;
+
+    [Space(1)]
+
+
+    [Header("流体の動粘度(m^2/sec)")]
+    [SerializeField, Tooltip("流体の動粘度(m^2/sec)"), Range((MyVar)0.001, (MyVar)1)]
+    private MyVar m_KinematicViscosity = (MyVar)0.058;
+
+    [Space(1)]
+
+    [Header("シャフトの摺動速度(m/sec)"),]
+    [SerializeField, Tooltip("シャフトの摺動速度(m/sec)"), Range((MyVar)(-10.0), (MyVar)(-0.1))]
+    private MyVar m_ShaftSpeed = (MyVar)(-5.6);
+
+    [Space(1)]
+
+    [Header("計算領域の形状")]
+    [SerializeField, Tooltip("シールリップのシャフト表面に対する傾き角度(°)"), Range((MyVar)1,(MyVar)50)]
+    private MyVar m_LipAngleDeg = 15;
+    [SerializeField, Tooltip("リブの先端角度(°)"), Range((MyVar)1,(MyVar)50)]
+    private MyVar m_RibTopAngle = 30;
+    [SerializeField, Tooltip("リブの高さ(m)"), Range((MyVar)0.000001, (MyVar)0.1)]
+    private MyVar m_RibHeight = (MyVar)0.0003; //0.00003
+    [SerializeField, Tooltip("シールリップとシャフト表面の隙間距離(m)"), Range((MyVar)0.000001, (MyVar)0.1)]
+    private MyVar m_GapBetweenLipShaft = (MyVar)0.00001;
+    [Space(1)]
+
+    [SerializeField, Tooltip("計算領域のX方向長さ(m)"), Range((MyVar)0.000001, (MyVar)0.01)]
+    private MyVar m_CalcAreaXLength = (MyVar)0.0002;
+    [SerializeField, Tooltip("計算領域のZ方向長さ(m)"), Range((MyVar)0.000001, (MyVar)0.01)]
+    private MyVar m_CalcAreaZLength = (MyVar)0.0002;
+
+    [Space(1)]
+
+    [Header("計算格子点数")]
+    [SerializeField, Tooltip("X方向の格子点数"), Range(1, 256)]
+    private uint MeshX = 1;
+    [SerializeField, Tooltip("Z方向の格子点数"), Range(1, 256)]
+    private uint MeshZ = 1;
+
+    [Space(1)]
+
+    [Header("収束判定")]
+    [SerializeField, Tooltip("収束判定"), Range((MyVar)0.000001, (MyVar)0.1)]
+    private MyVar m_Convergence = (MyVar)0.000001;
 
 
     /// <summary>
@@ -86,8 +136,6 @@ public class Reynolds_CShader : MonoBehaviour
     private float[] m_CalcResult = null;
 
 
-    [SerializeField, Tooltip("ComputeShaderを使用可否のToggleスイッチをセットしてください")]
-    private UnityEngine.UI.Toggle m_Toggle = null;
 
     /// <summary>
     /// 流体潤滑(三次元レイノルズ方程式)の計算に必要なオブジェクト
@@ -119,11 +167,6 @@ public class Reynolds_CShader : MonoBehaviour
         get { return this.meshZ; }
     }
 
-    [SerializeField, Tooltip("X方向の格子点数"), Range(1, 256)]
-    private uint MeshX;
-
-    [SerializeField, Tooltip("Z方向の格子点数"), Range(1, 256)]
-    private uint MeshZ;
 
 
     /// <summary>
@@ -156,6 +199,11 @@ public class Reynolds_CShader : MonoBehaviour
 
         this.SetMeshCountToCShader();           //ComputeShaderに計算格子点数をセットする
 
+        m_CalcResult = new float[meshX * meshZ];
+        for(int i=0; i<m_CalcResult.Length; i++)
+        {
+            m_CalcResult[i] = 1.0f;
+        }
     }
 
     // Update is called once per frame
@@ -168,8 +216,8 @@ public class Reynolds_CShader : MonoBehaviour
                 Debug.Log("Execute ComputeShader.");
                 if (m_ExchangeBuffer)
                 {
-                    m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSOutput);      //
-                    m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSInput);        //
+                    m_ComputeShader.SetBuffer(kernelNum, "inPressure", m_CSOutput);         //inPressureを
+                    m_ComputeShader.SetBuffer(kernelNum, "outPressure", m_CSInput);         //
                 }
                 else
                 {
@@ -274,6 +322,12 @@ public class Reynolds_CShader : MonoBehaviour
         m_CSResudial.Release();
     }
 
+    /// <summary>
+    /// ComputeShader内で使用するバッファを作成する。
+    /// m_CSInputは計算前の圧力を格納した配列
+    /// m_CSOutputはm_CSInput及びm_AN、m_AS、m_AE、m_AW、m_SPを使用した圧力の計算結果を格納する配列
+    /// m_CSResudialはm_CSOutputを計算した際の残差を格納する配列
+    /// </summary>
     void CreateIOSBuffer()
     {
         int bufferLen = (int)(this.meshX * this.meshZ * this.meshY);
@@ -290,7 +344,7 @@ public class Reynolds_CShader : MonoBehaviour
             data[i] = 1.0f;
         }
 
-        m_CSInput.SetData(data);
+        m_CSInput.SetData(data);        
     }
 
 
@@ -473,8 +527,8 @@ public class Reynolds_CShader : MonoBehaviour
     /// </summary>
     void InitReynoldsMesh()
     {
-        mesh = new ReynoldsFunc.Mesh(meshX, meshZ, 0.001f, 0.001f);     //計算を行う格子を作成する
-        mesh.CreateHeightArray(0.00003f, meshZ / 2);
+        mesh = new ReynoldsFunc.Mesh(meshX, meshZ, m_CalcAreaXLength, m_CalcAreaZLength);     //計算を行う格子を作成する
+        mesh.CreateHeightArray(m_RibHeight, meshZ / 3);
         mesh.CreateDeltaXYArray();
 
         mesh.Initialize_Calcu_PerFrame_Optimized();
@@ -488,6 +542,9 @@ public class Reynolds_CShader : MonoBehaviour
         get { return this.mesh.HeightArray; }
     }
 
+    /// <summary>
+    /// 格子点上の圧力配列のインスタンスを返す。1次元配列で格子点(x,z)の圧力PressureはPressure[x + z * meshX]に格納される。
+    /// </summary>
     public float[] Pressure
     {
         get
@@ -535,6 +592,24 @@ public class Reynolds_CShader : MonoBehaviour
     public MyVar CalAreaY
     {
         get { return mesh.MaxHeight; }
+    }
+
+    /// <summary>
+    /// 計算結果の配列m_CalcResultの最大値を返す。
+    /// </summary>
+    public MyVar MaxPressure
+    {
+        get
+        {
+            MyVar value = MyVar.MinValue;
+
+            for(int i=0; i<m_CalcResult.Length; i++)
+            {
+                value = (value < m_CalcResult[i]) ? m_CalcResult[i] : value;
+            }
+
+            return value;
+        }
     }
 
 }
