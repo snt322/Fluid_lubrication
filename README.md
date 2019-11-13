@@ -1,10 +1,10 @@
 # Fluid_lubrication
 三次元レイノルズ方程式をComputeShaderで計算するプロジェクト
 
-Overview
+# Overview
 ｵｲﾙｼｰﾙの大気側に十分なｵｲﾙが存在している場合に、ｼｬﾌﾄの回転に伴いｵｲﾙ側にﾎﾟﾝﾋﾟﾝｸﾞ作用が発生する。
 このﾎﾟﾝﾋﾟﾝｸﾞ作用を補強するためにｼｰﾙﾘｯﾌﾟ大気面にﾘﾌﾞと呼ばれる突起を付与する場合がある。
 ﾘﾌﾞ周辺はｸｻﾋﾞ効果によりｵｲﾙ油膜に圧力が発生し、この油膜圧の分布がﾎﾟﾝﾋﾟﾝｸﾞ作用の要因の一つと考えられる。
 三次元ﾚｲﾉﾙｽﾞ方程式を数値計算することで油膜圧分布を計算する。
 
-<img src="https://user-images.githubusercontent.com/52177886/68758346-ff623d00-0650-11ea-80fe-d8ceb024f23c.jpg" width="300px" alt="三次元レイノルズ方程式">
+<img src="https://user-images.githubusercontent.com/52177886/68769720-28da9300-0668-11ea-99c6-a4eca60eff3b.jpg" width="300px" alt="三次元レイノルズ方程式">
