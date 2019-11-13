@@ -1,0 +1,2 @@
+# Fluid_lubrication
+三次元レイノルズ方程式をComputeShaderで計算するプロジェクト
