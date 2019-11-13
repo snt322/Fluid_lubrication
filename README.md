@@ -12,8 +12,7 @@
 <br>
 油膜圧力の支配方程式には下記の「三次元ﾚｲﾉﾙｽﾞ方程式」があり、
 <br>
-<img src="https://user-images.githubusercontent.com/52177886/68769720-28da9300-0668-11ea-99c6-a4eca60eff3b.jpg" height="50px" alt="三次元レイノルズ方程式">
-
+<img src="https://user-images.githubusercontent.com/52177886/68773045-398e0780-066e-11ea-8863-1fae1f27507b.jpg" height="50px" alt="三次元レイノルズ方程式">
 <br>
 <img src="https://user-images.githubusercontent.com/52177886/68772400-16af2380-066d-11ea-9685-d4498cb13b94.jpg" width="500px" alt="座標系">
 <br>
