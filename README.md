@@ -12,13 +12,14 @@
 <br>
 油膜圧力の支配方程式には下記の「三次元ﾚｲﾉﾙｽﾞ方程式」があります。
 <br>
-<img src="https://user-images.githubusercontent.com/52177886/68773045-398e0780-066e-11ea-8863-1fae1f27507b.jpg" height="50px" alt="三次元レイノルズ方程式">
 <br>
+<img src="https://user-images.githubusercontent.com/52177886/68773045-398e0780-066e-11ea-8863-1fae1f27507b.jpg" height="50px" alt="三次元レイノルズ方程式">
 <br>
 <br>
 ここで、P、h、U、V、Wは、油膜圧力、ｼｰﾙﾘｯﾌﾟとｼｬﾌﾄの隙間距離、X方向速度、Y方向速度、Z方向速度とします。
 <br>
 下図のような系を考えます。
+<br>
 <br>
 <img src="https://user-images.githubusercontent.com/52177886/68772400-16af2380-066d-11ea-9685-d4498cb13b94.jpg" width="500px" alt="座標系">
 <br>
