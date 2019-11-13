@@ -7,4 +7,4 @@
 ﾘﾌﾞ周辺はｸｻﾋﾞ効果によりｵｲﾙ油膜に圧力が発生し、この油膜圧の分布がﾎﾟﾝﾋﾟﾝｸﾞ作用の要因の一つと考えられる。
 三次元ﾚｲﾉﾙｽﾞ方程式を数値計算することで油膜圧分布を計算する。
 
-<img src="https://user-images.githubusercontent.com/52177886/68769720-28da9300-0668-11ea-99c6-a4eca60eff3b.jpg" width="300px" alt="三次元レイノルズ方程式">
+<img src="https://user-images.githubusercontent.com/52177886/68769720-28da9300-0668-11ea-99c6-a4eca60eff3b.jpg" width="500px" alt="三次元レイノルズ方程式">
