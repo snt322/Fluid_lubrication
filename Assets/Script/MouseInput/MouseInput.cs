@@ -11,10 +11,7 @@ using UnityEngine.EventSystems;
  * 入力イベントを取得するには
  * ①カメラにレイキャスタをアタッチする。
  * ②入力イベントを受けるオブジェクトにコライダーをアタッチする。
- * カメラにレイキャスタをアタッチしていない場合はすべての入力イベントは受け付けない。
- * 
- * サポートされているイベント
- * 
+ * カメラにレイキャスタをアタッチしていない場合はすべての入力イベントは受け付けない。 
  */
 
 
@@ -30,14 +27,15 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     private GameObject m_GameObjectMenuContext = null;
 
     /// <summary>
-    /// マウス左ボタンの動作を制御するオブジェクト
+    /// マウス左ボタンのマウスドラッグ動作を制御するオブジェクト
     /// </summary>
-    private MouseFunction m_MouseFunc = new MouseFunction();
+    private MouseFunction m_MouseLeft = new MouseFunction();
 
-    private Vector2 m_FormerMousePos;
-    private Vector2 m_FormerMouseMiddlePos;
+    /// <summary>
+    /// マウスホイールボタンのマウスドラッグ動作を制御するオブジェクト
+    /// </summary>
+    private MouseFunction m_MouseMiddle = new MouseFunction();
 
-    private bool m_IsMiddleDown = false;
 
 
 
@@ -45,29 +43,24 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     void Update()
     {
 
-        if (m_MouseFunc.IsMouseDown)
+        if (m_MouseLeft.IsMouseDown)
         {
-            Vector2 tmpVect = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            Vector2 MouseDragVector = tmpVect - m_FormerMousePos;
-            m_FormerMousePos = (MouseDragVector == new Vector2(0, 0)) ? m_FormerMousePos : tmpVect;
+            m_MouseLeft.CurrentMousePos = Input.mousePosition;                                          //現在のマウス座標をセット
 
-
-            MouseDragVector /= 20.0f;
-
-            Vector3 rot = new Vector3(MouseDragVector.y, -MouseDragVector.x, 0);
-
+            Vector2 tmpRot = m_MouseLeft.MouseDragedVector;
+            tmpRot /= 20.0f;                                                                            //20.0fはマウスドラッグ量を減衰して回転が大きくなりすぎないようにするため
+            Vector3 rot = new Vector3(tmpRot.y, -tmpRot.x, 0);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, eventData) => { sender.MessageRotate(rot); });
- //           Debug.Log("Mouse Delta = " + tmpVect);
         }
 
-        if(m_IsMiddleDown)
+        if(m_MouseMiddle.IsMouseDown)
         {
-            Vector2 tmpVect = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            Vector2 MouseDragVector = tmpVect - m_FormerMouseMiddlePos;
-            m_FormerMouseMiddlePos = (MouseDragVector == new Vector2(0, 0)) ? m_FormerMouseMiddlePos : tmpVect;
+            m_MouseMiddle.CurrentMousePos = Input.mousePosition;
 
-            Vector3 move = new Vector3(MouseDragVector.x, MouseDragVector.y, 0);
+            Vector2 mov = m_MouseMiddle.MouseDragedVector;
+            mov /= 20.0f;
+            Vector3 move = new Vector3(mov.x, mov.y, 0);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, eventData) => { sender.MessageMove(move); });
         }
@@ -79,17 +72,15 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     {
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            m_MouseFunc.MouseUp(eventData.position);
+            m_MouseLeft.MouseUp(eventData.position);
             UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageRotateConfirm(); });
- //           Debug.Log("OnPointerUp" + eventData.position);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
 
         if (eventData.button == PointerEventData.InputButton.Middle)
         {
-            m_IsMiddleDown = false;
-//            Debug.Log("Middle Up.");
+            m_MouseMiddle.MouseUp(eventData.position);
 
             UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Hide(); });
         }
@@ -97,7 +88,6 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         if(eventData.button == PointerEventData.InputButton.Right)
         {
             UnityEngine.EventSystems.ExecuteEvents.Execute<MenuContext.ISendMessage>(m_GameObjectMenuContext, eventData, (sender, eData) => { sender.Show(eventData); });
-//            Debug.Log("Right Up.");
         }
 
     }
@@ -106,19 +96,15 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     {
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            m_MouseFunc.MouseDown(eventData.position);
-            m_MouseFunc.CurrentMousePos = eventData.position;
-//            Debug.Log("OnPointerDown" + eventData.position);
+            m_MouseLeft.MouseDown(eventData.position);
 
-            m_FormerMousePos = eventData.position;
+            m_MouseLeft.FormerMousePos = eventData.position;
         }
 
         if (eventData.button == PointerEventData.InputButton.Middle)
         {
-            m_IsMiddleDown = true;
-            m_FormerMouseMiddlePos = eventData.position;
-
-//            Debug.Log("Middle Down.");
+            m_MouseMiddle.MouseDown(eventData.position);
+            m_MouseMiddle.FormerMousePos = eventData.position;
         }
 
     }
@@ -129,15 +115,10 @@ public class MouseInput : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         var delta = eventData.scrollDelta / 10.0f;
 
         UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageDistance(delta.y); });
-
- //       Debug.Log("Scroll. : " + delta);
-
-
     }
 
     void ISendMessage.SendMouseDelta(float delta)
     {
-        Debug.Log("ISendMessage : " + delta);
         UnityEngine.EventSystems.ExecuteEvents.Execute<IMessage>(m_SceneCamera, null, (sender, sendEventData) => { sender.MessageDistance(delta); });
     }
 }
