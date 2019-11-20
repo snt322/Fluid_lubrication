@@ -33,9 +33,9 @@
 <br>
 仮定2より右辺第3項および第5項が0、右辺第1項はU2が0となる。
 <br><br>
-<img src="https://user-images.githubusercontent.com/52177886/69241289-d65a2300-0be1-11ea-8a42-0736b65340bf.jpg" width="500px" alt="簡略化条件">
+<img src="https://user-images.githubusercontent.com/52177886/69241289-d65a2300-0be1-11ea-8a42-0736b65340bf.jpg" height="50px" alt="簡略化条件">
 <br><br>
 以上の仮定から、三次元レイノルズ方程式は次のようになる。
 <br><br>
-<img src="https://user-images.githubusercontent.com/52177886/69241318-e7a32f80-0be1-11ea-93c9-52c0a0592298.jpg" width="500px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式">
+<img src="https://user-images.githubusercontent.com/52177886/69241318-e7a32f80-0be1-11ea-93c9-52c0a0592298.jpg" height="50px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式">
 <br><br>
