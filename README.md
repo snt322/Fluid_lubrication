@@ -53,16 +53,12 @@
 簡単化した三次元レイノルズ方程式を再度記載する。
 <br>
 <img src="https://user-images.githubusercontent.com/52177886/69241318-e7a32f80-0be1-11ea-93c9-52c0a0592298.jpg" height="50px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式">
-<br>
 左辺第1項は、
 <br>
 <img src="https://user-images.githubusercontent.com/52177886/69256171-6c9b4280-0bfc-11ea-8d7a-416c06e13f6c.jpg" height="120px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式 左辺第1項">
-<br>
 左辺第2項は、
 <br>
 <img src="https://user-images.githubusercontent.com/52177886/69256190-758c1400-0bfc-11ea-820e-1a7161031d80.jpg" height="120px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式 左辺第2項">
-<br>
 右辺の項は、
 <img src="https://user-images.githubusercontent.com/52177886/69257315-3a8ae000-0bfe-11ea-843a-2b8448b9ad11.jpg" height="50px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式 右辺項">
-<br>
 となる。上式を左辺に格子点(i,j)の圧力Pに、その他の項を右辺にまとめると、
