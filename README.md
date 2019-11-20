@@ -46,7 +46,7 @@
 <br>
 計算格子は下図の等間隔格子を用い、x方向およびz方向の格子点番号を添え字i,jであらわすこととする。
 <br><br>
-<img src="https://user-images.githubusercontent.com/52177886/69247861-803fac80-0bee-11ea-97b0-5db9531169b7.jpg" width="500px" alt="計算格子">
+<img src="https://user-images.githubusercontent.com/52177886/69247861-803fac80-0bee-11ea-97b0-5db9531169b7.jpg" width="00px" alt="計算格子">
 <br><br>
 
 
