@@ -46,10 +46,20 @@
 <br>
 計算格子は下図の等間隔格子を用い、x方向およびz方向の格子点番号を添え字i,jであらわすこととする。
 <br><br>
-<img src="https://user-images.githubusercontent.com/52177886/69247861-803fac80-0bee-11ea-97b0-5db9531169b7.jpg" width="300px" alt="計算格子">
+<img src="https://user-images.githubusercontent.com/52177886/69256384-bb48dc80-0bfc-11ea-9f7e-32d8046d5d52.jpg" width="300px" alt="計算格子">
 <br><br>
 
-
-
-
+<br>
+簡単化した三次元レイノルズ方程式を再度記載する。
+<br><br>
+<img src="https://user-images.githubusercontent.com/52177886/69241318-e7a32f80-0be1-11ea-93c9-52c0a0592298.jpg" height="50px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式">
+<br><br>
+左辺第1項は
+<br><br>
+<img src="https://user-images.githubusercontent.com/52177886/69256171-6c9b4280-0bfc-11ea-8d7a-416c06e13f6c.jpg" height="100px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式 左辺第1項">
+<br><br>
+左辺第2項は
+<br><br>
+<img src="https://user-images.githubusercontent.com/52177886/69256190-758c1400-0bfc-11ea-820e-1a7161031d80.jpg" height="100px" alt="簡略化した三次元ﾚｲﾙｽﾞ方程式 左辺第2項">
+<br><br>
 
