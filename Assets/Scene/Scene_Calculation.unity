@@ -2368,7 +2368,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_InterfaceTarget: {fileID: 1374238637}
   m_GameObjectMenuContext: {fileID: 1653700230}
-  m_DrawScale: 1
 --- !u!1 &1386753774
 GameObject:
   m_ObjectHideFlags: 0
