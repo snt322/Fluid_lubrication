@@ -1,35 +1,55 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ResultMesh;
 using UnityEngine;
 
 using UnityEngine.EventSystems;
 
-
+/// <summary>
+/// 等高線図のコントローラ
+/// SerializedFieldメンバで等高線図を形成する。
+/// 等高線図の表示内容を追加する場合はenum enumMeshTypeに列挙子を追加して
+/// enumMehsTypeの参照箇所に処理を追加してください。
+/// </summary>
 public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
 {
-    [SerializeField]
+    /// <summary>
+    /// メッシュグラフのメッシュとなるMeshFilterを持つオブジェクトをセット
+    /// </summary>
+    [SerializeField,Tooltip("メッシュグラフのメッシュにするMeshFilterをセットして下さい。")]
     private UnityEngine.MeshFilter m_MeshFilter = null;
-    [SerializeField]
+
+    /// <summary>
+    /// メッシュグラフのメッシュとなるMeshFilterを持つオブジェクト
+    /// </summary>
+    [SerializeField, Tooltip("メッシュグラフのメッシュとなるMeshFilterにアタッチされたMeshColliderをセットしてください。")]
     private UnityEngine.MeshCollider m_MCollider = null;
 
+    /// <summary>
+    /// 等高線図のラベル(原点、軸名)を表示するゲームオブジェクト
+    /// </summary>
     [Header("等高線図の表示設定")]
-    [SerializeField, Tooltip("等高線図の原点ビルボードにアタッチしたTextBillBoardをセットしてください")]
+    [SerializeField, Tooltip("等高線図の原点を表示するText(BillBoardToMainCamera.cs)をセットしてください")]
     private GameObject m_OrigineBillBoard = null;
-    [SerializeField, Tooltip("等高線図のX軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
+    [SerializeField, Tooltip("等高線図のX軸名を表示するText(BillBoardToMainCamera.cs)をセットしてください")]
     private GameObject m_XaxisBillBoard = null;
-    [SerializeField, Tooltip("等高線図のZ軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
+    [SerializeField, Tooltip("等高線図のZ軸名を表示するText(BillBoardToMainCamera.cs)をセットしてください")]
     private GameObject m_ZaxisBillBoard = null;
-    [SerializeField, Tooltip("等高線図のY軸ビルボードにアタッチしたTextBillBoardをセットしてください")]
+    [SerializeField, Tooltip("等高線図のY軸名を表示するText(BillBoardToMainCamera.cs)をセットしてください")]
     private GameObject m_YaxisBillBoard = null;
     [Space(1)]
 
+
+    /// <summary>
+    /// 等高線図の軸を表示するゲームオブジェクトのLineRenderer
+    /// </summary>
     [Header("等高線図の軸")]
-    [SerializeField, Tooltip("X軸")]
+    [SerializeField, Tooltip("X軸、軸を描くLineRendererをセットしてください")]
     private UnityEngine.LineRenderer m_Xaxis = null;
-    [SerializeField, Tooltip("Y軸")]
+    [SerializeField, Tooltip("Y軸、軸を描くLineRendererをセットしてください")]
     private UnityEngine.LineRenderer m_Yaxis = null;
-    [SerializeField, Tooltip("Z軸")]
+    [SerializeField, Tooltip("Z軸、軸を描くLineRendererをセットしてください")]
     private UnityEngine.LineRenderer m_Zaxis = null;
 
     [Header("等高線の軸ラベル")]
@@ -55,7 +75,7 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
     private float m_Ywidth = 1.0f;
 
     [Header("メッシュの更新頻度(回/frame)")]
-    [SerializeField, Tooltip("メッシュの更新レート(回/frame)"), Range(1, 1000)]
+    [SerializeField, Tooltip("メッシュの更新レート(回/frame)"), Range(1, 1000), Obsolete("未実装")]
     private int m_MeshUpdatePerFrame = 1;
 
 
@@ -96,56 +116,27 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
         {
             case ResultMesh.enumMeshType.CalcuMesh:
                 MyOnValidate_Calc();
+                Debug.Log("------------------------------------1");
+                Debug.Log("enumMeshType.CalcuMesh");
+                Debug.Log("------------------------------------2");
                 break;
             case ResultMesh.enumMeshType.PressureMesh:
                 MyOnValidate_Pressure();
+//                SetPlaneMeshFromCShader();
                 break;
         }
 
     }
 
     /// <summary>
-    /// 計算格子を表示するメソッド
+    /// 計算格子を表示する
     /// </summary>
     private void MyOnValidate_Calc()
     {
         try
         {
-            float Xwidth = m_RCShader.CalAreaX;
-            float Zwidth = m_RCShader.CalAreaZ;
             float Ywidth = m_RCShader.CalAreaY;
-            float magnitudeX = m_Xwidth / Xwidth;
-            float magnitudeZ = m_Zwidth / Zwidth;
-            float magnitudeY = m_Ywidth / Ywidth;
-
-            this.m_MeshFilter.transform.localScale = new Vector3(magnitudeX, magnitudeY, magnitudeZ);
-
-            Vector3 originePos = new Vector3(0, 0, 0);
-            Vector3 xPos = new Vector3(m_Xwidth, 0, 0);
-            Vector3 zPos = new Vector3(0, 0, m_Zwidth);
-            Vector3 yPos = new Vector3(0, m_Ywidth, 0);
-
-
-            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_OrigineBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(originePos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_ZaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(zPos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_XaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(xPos); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<AxisLabel.IMessageSend>(m_YaxisBillBoard, null, (sender, eventData) => { sender.UpdateLabelPos(yPos); });
-
-            m_Xaxis.SetPosition(0, new Vector3(0, 0, 0));
-            m_Xaxis.SetPosition(1, xPos);
-
-            m_Yaxis.SetPosition(0, new Vector3(0, 0, 0));
-            m_Yaxis.SetPosition(1, yPos);
-
-            m_Zaxis.SetPosition(0, new Vector3(0, 0, 0));
-            m_Zaxis.SetPosition(1, zPos);
-
-            UnityEngine.EventSystems.ExecuteEvents.Execute<IMessageCreateLabel>(m_AxiLabel.gameObject, null, (sender, eventData) => { sender.UpdateLabelPos(new Vector3(xPos.x, yPos.y, zPos.z)); });
-
-            var MyAxisGridVect = new Vector3(m_Xwidth, m_Ywidth, m_Zwidth);
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
-            UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+            ResizeGraph(Ywidth);
         }
         catch (System.Exception e)
         {
@@ -154,24 +145,35 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
     }
 
     /// <summary>
-    /// 計算結果を表示するメソッド
+    /// 計算中または計算完了した圧力分布を表示する
     /// </summary>
     private void MyOnValidate_Pressure()
     {
         try
         {
+            float Ywidth = m_RCShader.MaxPressure;
+            ResizeGraph(Ywidth);
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// 等高線図のXYZ軸の表示長さをセットする
+    /// </summary>
+    /// <param name="yWidth">表示内容(圧力、計算格子)に応じて変更する</param>
+    private void ResizeGraph(float yWidth)
+    {
+        try
+        {
             float Xwidth = m_RCShader.CalAreaX;
             float Zwidth = m_RCShader.CalAreaZ;
-            float Ywidth = m_RCShader.MaxPressure;
-
-            Debug.Log("Pressure = " + Ywidth + "+++++++++++++++++++++++" );
-
+            float Ywidth = yWidth;
             float magnitudeX = m_Xwidth / Xwidth;
             float magnitudeZ = m_Zwidth / Zwidth;
             float magnitudeY = m_Ywidth / Ywidth;
-
-            Debug.Log("m_Ywidth = " + m_Ywidth + "+++++++++++++++++++++++");
-            Debug.Log("magnitudeY = " + magnitudeY + "+++++++++++++++++++++++");
 
             this.m_MeshFilter.transform.localScale = new Vector3(magnitudeX, magnitudeY, magnitudeZ);
 
@@ -201,16 +203,20 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Xaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Yaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
             UnityEngine.EventSystems.ExecuteEvents.Execute<MyAxisGrid.ISendMessage>(m_Zaxis.gameObject, null, (sender, eventData) => { sender.Update(5, MyAxisGridVect); });
+        
         }
         catch (System.Exception e)
         {
             Debug.Log(e.Message);
         }
+
     }
 
 
     /// <summary>
-    /// 
+    /// 計算格子を表示する
+    /// 等高線図のMeshFilter m_MeshFilterのmeshメンバに新たに作成したMesh()をセットする
+    /// 既存のMeshは破棄する 
     /// </summary>
     private void SetPlaneMeshFromCShader()
     {
@@ -221,10 +227,8 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
         int meshZCount = (int)m_RCShader.MeshZCount;
 
 
-        Mesh meshRederer = new Mesh();
-        m_MeshFilter.mesh = meshRederer;
-
-        meshRederer.name = "MyPlaneMesh";
+        var meshRederer = m_MeshFilter.mesh;
+        meshRederer.name = "MyMeshGraph";
 
         int x = (int)m_RCShader.MeshXCount;
         int z = (int)m_RCShader.MeshZCount;
@@ -250,9 +254,6 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
         }
 
         meshRederer.vertices = vertices;
-        //        mesh.colors = colors;
-
-
 
         int numIndices = 0;
         int[] indices = new int[2 * (x - 1) * z + 2 * x * (z - 1)];
@@ -274,34 +275,11 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
             }
         }
 
-/*
-        int[] indices = new int[6 * (x - 1) * (z - 1)];
-        for (int i = 0; i <= (x - 2); i++)
-        {
-            for (int j = 0; j <= (z - 2); j++)
-            {
-                indices[numIndices++] = (i) + (j) * x;
-                indices[numIndices++] = (i + 1) + (j + 1) * x;
-                indices[numIndices++] = (i + 1) + (j) * x;
-
-                indices[numIndices++] = (i) + (j) * x;
-                indices[numIndices++] = (i) + (j + 1) * x;
-                indices[numIndices++] = (i + 1) + (j + 1) * x;
-
-            }
-        }
-*/
-
-
 
         Debug.Log("x = " + x + " z = " + z + " total = " + (x * z));
         Debug.Log("numIndices = " + numIndices);
 
         meshRederer.SetIndices(indices, MeshTopology.Lines, 0);
-//        meshRederer.SetIndices(indices, MeshTopology.LineStrip, 0);
-
-
-
 
         Vector2[] uv = new Vector2[x * z];
 
@@ -320,7 +298,10 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
 
 
         //---------------------------------------------------------------
-        Mesh meshCollider = new Mesh();
+/*
+//        Mesh meshCollider = new Mesh();
+        var meshCollider = m_MCollider.sharedMesh;
+//        meshCollider.name = "MyMeshGraphCollider";
 
         List<Vector3> inVertices = new List<Vector3>(4);
         inVertices.Add(new Vector3(0, 0, 0));
@@ -341,6 +322,7 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
         meshCollider.SetIndices(inIndices, MeshTopology.Triangles, 0);
 
         m_MCollider.sharedMesh = meshCollider;
+*/
     }
 
 
@@ -449,15 +431,33 @@ public class ResultMeshController : MonoBehaviour, ResultMesh.ISendMessage
 
 namespace ResultMesh
 {
+    /// <summary>
+    /// 等高線図の表示内容を表す
+    /// 表示内容を増やす場合は
+    /// </summary>
     public enum enumMeshType
     {
+        /// <summary>
+        /// 計算格子を表示
+        /// </summary>
         CalcuMesh,
+        /// <summary>
+        /// 計算中または計算完了の圧力分布を表示
+        /// </summary>
         PressureMesh,
     }
 
+
     public interface ISendMessage : IEventSystemHandler
     {
+        /// <summary>
+        /// 等高線図の表示変更指示メッセージ(計算を行う格子形状を表示)
+        /// </summary>
         void ShowCalcMesh();
+
+        /// <summary>
+        /// 投稿線図の表示変更指示メッセージ(計算中または計算完了の圧力分布を表示)
+        /// </summary>
         void ShowPressureMesh();
     }
 }

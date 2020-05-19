@@ -28,7 +28,7 @@ public class PressureMeshController : MonoBehaviour, PressureMesh.ISendMessage
 
 
     /// <summary>
-    /// 初期化フラグ
+    /// 圧力分布のMeshFilterの初期化確認フラグ
     /// </summary>
     private bool m_IsInitialized = false;
 
